@@ -5,3 +5,5 @@ Pacman emulator for Terminals in Rust
  * cargo run
  * cargo run 50 120
  * cargo run $(stty size)
+
+![Pacman Terminal Screenshot](./screenshot.png)
