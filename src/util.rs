@@ -13,7 +13,7 @@ pub fn readline() { stdin().read_line(&mut String::new()).ok(); }
 pub struct Rnd (u16);
 
 impl Rnd {
-  pub fn new () -> Rnd { Rnd(0xfaaa) }
+  pub fn new () -> Rnd { Rnd(0xfaa5) }
   pub fn rnd (&mut self) -> u16 {
     self.0 ^= self.0>>7;  self.0 ^= self.0<<9;
     self.0 ^= self.0>>13; self.0

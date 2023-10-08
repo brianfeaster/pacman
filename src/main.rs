@@ -18,7 +18,7 @@ pub use util::{sleep, readline, Rnd, Term};
 // Pixels ᗣ ᗧ · ⋅ • ● ⬤
 pub const BLKA :&str = "\x1b[3m "; // Inverted ASCII space
 pub const BLKB :char = '█'; // full block 2588
-pub const BLK   :char = '▉'; // left 7/8th block 2589
+pub const BLK  :char = '▉'; // left 7/8th block 2589
 pub const BLKD :char = '◼'; // black medium square 25fc
 pub const BLKE :char = '▮'; // black verticle rectangle 25ae
 pub const BLKF :char = '▪'; // black small square 25aa
@@ -39,6 +39,10 @@ const SPRITEWIDTH: usize=16;
 const SPRITEHEIGHT: usize=16;
 const SPRITEVOLUME: usize=SPRITEWIDTH*SPRITEHEIGHT;
 const SPRITECOUNT: usize = 8;
+
+const RASTERWIDTH:  usize = TILEWIDTH * FIELDWIDTH;
+const RASTERHEIGHT: usize = TILEHEIGHT * FIELDHEIGHT;
+const RASTERVOLUME: usize= RASTERWIDTH*RASTERHEIGHT;
 
 type TileData   = [u8; TILEVOLUME];
 type SpriteData = [u8; SPRITEVOLUME];
@@ -68,8 +72,8 @@ impl Video {
       spritedata:[[0; SPRITEVOLUME]; TILECOUNT],
       sprites:   [Sprite::default(); SPRITECOUNT],
       field:     [63; FIELDVOLUME],
-      raster:    [0;  TILEVOLUME*FIELDVOLUME],
-      last:      [255;TILEVOLUME*FIELDVOLUME],
+      raster:    [0;  (TILEVOLUME*FIELDVOLUME)],
+      last:      [255;(TILEVOLUME*FIELDVOLUME)],
       rnd:       Rnd::new()
     }
   }
@@ -123,30 +127,41 @@ impl Video {
       for cy in 0..TILEHEIGHT {
         for cx in 0..TILEWIDTH {
           self.raster[
-            fy*TILEVOLUME*FIELDWIDTH    + fx*TILEWIDTH
-            + cy*TILEWIDTH*FIELDWIDTH + cx
-          ] = self.tiledata[self.field[fy*FIELDWIDTH+fx] as usize][cy*TILEWIDTH+cx]
+            fy*TILEVOLUME*FIELDWIDTH  + fx*TILEWIDTH
+            + cy*TILEWIDTH*FIELDWIDTH + cx]
+          = self.tiledata
+              [self.field[fy*FIELDWIDTH+fx] as usize]
+              [cy*TILEWIDTH+cx] // TODO use getField
         }
       }
     } }
 
-    for s in 0..SPRITECOUNT {
-        if self.sprites[s].en { for cy in 0..SPRITEHEIGHT {
+    // sprite orign 0,0 (not visible) at raster -16,-16, thus fully visible at 16,16
+    'A: for s in 0..SPRITECOUNT { if self.sprites[s].en {
+
+        let slocx = self.sprites[s].x;
+        let slocy = self.sprites[s].y;
+
+        for cy in 0..SPRITEHEIGHT {
           for cx in 0..SPRITEWIDTH {
-            let b = self.spritedata[self.sprites[s].id][cy*SPRITEWIDTH+cx];
-            if 0 < b {
-              self.raster[
-                self.sprites[s].y*TILEWIDTH*FIELDWIDTH + self.sprites[s].x
-                + cy*TILEWIDTH*FIELDWIDTH + cx
-              ] = b;
-            }
-          }
-        } }
-    }
+
+            let x = slocx + cx;
+            let y = slocy + cy;
+
+            if x<16 && y<16 { continue 'A }
+
+            let sid = self.sprites[s].id;
+            let b = self.spritedata [sid] [cy*SPRITEWIDTH+cx];
+
+            if 0 < b { self.raster[(y-16)*RASTERWIDTH+x-16] = b }
+          } // cx
+        } // cy
+    } }
   }
-  fn dumpField(&mut self, mut w: usize, mut h: usize, fx: usize, fy: usize) {
-    w = min(w, TILEWIDTH*FIELDWIDTH);
-    h = min(h, TILEHEIGHT*FIELDHEIGHT);
+
+  fn dumpField(&mut self, mut w: usize, mut h: usize, px: usize, py: usize) { // (px,py) Pucman sprite coordinates location
+    w = min(w, RASTERWIDTH);
+    h = min(h, RASTERHEIGHT);
     let mut buff = String::new();
     let mut lastColor=0;
     write!(buff, "\x1b[H\x1b[30m").ok();
@@ -154,19 +169,10 @@ impl Video {
     for y in 0..h {
       if 0 != y { write!(buff, "\n").ok(); }
       for x in 0..w {
-
-        let top =
-          min(
-            max(0, (fy + 4) as isize - (h as isize >>1) )as usize,
-            FIELDHEIGHT*TILEHEIGHT - h);
-
-        let left =
-          min(
-            max(0, (fx + 4) as isize - (w as isize >>1) )as usize,
-            FIELDWIDTH*TILEWIDTH - w);
-
-        let b = self.raster[(y+top)*TILEWIDTH*FIELDWIDTH+(x+left)];
-        let l = self.last[y*TILEWIDTH*FIELDWIDTH+x];
+        let top = min(max(0, (py-8-(h>>1))as isize), (RASTERHEIGHT-h)as isize)as usize;
+        let left= min(max(0, (px-8-(w>>1))as isize), (RASTERWIDTH-w)as isize)as usize;
+        let b = self.raster[(y+top)*RASTERWIDTH+x+left];
+        let l = self.last[y*RASTERWIDTH+x];
 
         if b!=l {
           if loc != (x, y) {
@@ -184,6 +190,7 @@ impl Video {
       }
     }
     <Stdout as io::Write>::write_all(&mut stdout(), buff.as_bytes()).ok();
+    print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
   }
 
   pub fn debugSprite(&self, id: usize) {
@@ -223,8 +230,8 @@ fn randir (vid: &mut Video, x: usize, y: usize, mut lastdir: usize) -> usize {
    } }
 }
 
-const DMX :[isize;4] = [0, -1, 1, 0];
-const DMY :[isize;4] = [-1, 0, 0, 1];
+const DMX :[isize; 4] = [0, -1, 1, 0];
+const DMY :[isize; 4] = [-1, 0, 0, 1];
 
 struct Entity {
     sprite: usize,
@@ -241,15 +248,15 @@ impl Entity {
   }
   fn tick (&mut self, vid: &mut Video) {
     vid.sprites[self.sprite].en=true;
-    let inc = self.tick%8;
-    let x = 8*self.fx as isize+ DMX[self.dir]*inc as isize - 4;
-    let y = 8*self.fy as isize + DMY[self.dir]*inc as isize - 4;
+    let inc = self.tick % 8;
+    let x = 8*self.fx + DMX[self.dir]as usize*inc + 16 - 4;
+    let y = 8*self.fy + DMY[self.dir]as usize*inc + 16 - 4;
     vid.setSpriteIdx(self.sprite, self.data+self.dir*2 + self.tick/8%2);
-    vid.setSpriteLoc(self.sprite, x as usize, y as usize);
+    vid.setSpriteLoc(self.sprite, x, y);
     if 7 == inc {
-       self.fx = (self.fx as isize + DMX[self.dir]) as usize;
-       self.fy = (self.fy as isize + DMY[self.dir]) as usize;
-       self.dir = randir(vid, self.fx as usize, self.fy as usize, self.dir);
+       self.fx = self.fx + DMX[self.dir] as usize;
+       self.fy = self.fy + DMY[self.dir] as usize;
+       self.dir = randir(vid, self.fx, self.fy, self.dir);
     }
     self.tick += 1;
   }
@@ -262,39 +269,42 @@ struct Pukman {
     fy: usize,
     dir: usize,
     tick: usize,
-    fx2: usize,
-    fy2: usize,
+    px: usize,
+    py: usize,
 }
 
 impl Pukman {
   fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Self {
-    Self{sprite, data, fx, fy, dir, tick:0, fx2:0, fy2:0}
+    Self{sprite, data, fx, fy, dir, tick:0, px:0, py:0}
   }
   fn tick (&mut self, vid: &mut Video) {
     vid.sprites[self.sprite].en=true;
     let inc = self.tick%8;
-    let x = 8*self.fx as isize + DMX[self.dir]*inc as isize - 4;
-    let y = 8*self.fy as isize + DMY[self.dir]*inc as isize - 4;
-    self.fx2 = x as usize;
-    self.fy2 = y as usize;
+    let x = (8*self.fx + inc*DMX[self.dir]as usize + 16 - 4) % RASTERVOLUME;
+    let y = (8*self.fy + inc*DMY[self.dir]as usize + 16 - 4) % RASTERVOLUME;
+
+    vid.setSpriteLoc(self.sprite, x, y);
 
     vid.setSpriteIdx(self.sprite,
-      (self.data as isize + match self.tick%4 {
+      self.data + match self.tick%4 {
         0 => 0,
-        1 => self.dir as isize * 2 + 1,
-        2 => self.dir as isize * 2 + 2,
-        3 => self.dir as isize * 2 + 1,
+        1 => self.dir * 2 + 1,
+        2 => self.dir * 2 + 2,
+        3 => self.dir * 2 + 1,
         _ => 0
-      }) as usize
+      }
     );
 
-    vid.setSpriteLoc(self.sprite, x as usize, y as usize);
     if 7 == inc {
-       self.fx = (self.fx as isize + DMX[self.dir]) as usize;
-       self.fy = (self.fy as isize + DMY[self.dir]) as usize;
-       self.dir = randir(vid, self.fx as usize, self.fy as usize, self.dir);
+       self.fx = self.fx + DMX[self.dir]as usize;
+       self.fy = self.fy + DMY[self.dir]as usize;
+       self.dir = randir(vid, self.fx, self.fy, self.dir);
     }
-    if 0 == self.tick%4 {vid.setFieldTile(0, self.fx, self.fy); }
+
+    if 0 == self.tick%4 { vid.setFieldTile(0, self.fx, self.fy); } // nom pill
+
+    self.px = x;
+    self.py = y;
     self.tick += 1;
   }
 }
@@ -310,7 +320,7 @@ fn main() {
     let mut pinky  = Entity::new(1, 8,  12, 4, 3);
     let mut inky   = Entity::new(2, 16, 1, 8, 0);
     let mut clyde  = Entity::new(3, 24, 12, 8, 1);
-    let mut pukman = Pukman::new(4, 32, 3, 4, 2); // bottom 1 29 3
+    let mut pukman = Pukman::new(4, 32, 4, 4, 2); // bottom 1 29 3
     //let mut pukmana = Pukman::new(5, 32, 6, 4, 3);
     //let mut pukmanb = Pukman::new(6, 32, 6, 4, 3);
     //let mut pukmanc = Pukman::new(7, 32, 6, 4, 3);
@@ -327,8 +337,8 @@ fn main() {
         //pukmanb.tick(&mut vid);
         //pukmanc.tick(&mut vid);
         vid.rasterizeField();
-        vid.dumpField(term.w, term.h, pukman.fx2, pukman.fy2);
-        sleep(40);
+        vid.dumpField(term.w, term.h, pukman.px, pukman.py);
+        sleep(30);
     }
     //vid.debugSprite(0);
 }
