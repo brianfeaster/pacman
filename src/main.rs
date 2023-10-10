@@ -11,7 +11,7 @@ use std::{
 
 mod data;
 mod util;
-use data::{setData};
+use data::{initializeVideoDataPukman};
 pub use util::{sleep, readline, Rnd, Term};
 
 ////////////////////////////////////////
@@ -62,7 +62,8 @@ struct Sprite {
     en: bool,
 }
 
-pub struct Video {
+pub struct Graphics {
+    term: Term,
     tiledata:   [TileData;   TILECOUNT],
     spritedata: [SpriteData; TILECOUNT],
     field:   [u8;  FIELDVOLUME],
@@ -72,9 +73,11 @@ pub struct Video {
     rnd: Rnd
 }
 
-impl Video {
-  fn new() -> Video {
-    Video{
+impl Graphics {
+  fn new(term: Term) -> Graphics {
+    print!("\x1bc\x1b[0;30;40m\x1b[H\x1b[J");
+    Graphics{
+      term,
       tiledata:  [[0; TILEVOLUME];   TILECOUNT],
       spritedata:[[0; SPRITEVOLUME]; TILECOUNT],
       sprites:   [Sprite::default(); SPRITECOUNT],
@@ -83,6 +86,36 @@ impl Video {
       last:      [255;(TILEVOLUME*FIELDVOLUME)],
       rnd:       Rnd::new()
     }
+  }
+  fn initializeTileData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
+    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
+    let mut i = 0;
+    s.iter().for_each(|s| {
+        s.chars().for_each(|c| {
+            self.tiledata[id][i]=hm[&c];
+            i += 1;
+        })
+    });
+  }
+  fn initializeSpriteData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
+    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
+    let mut i = 0;
+    s.iter().for_each(|s| {
+        s.chars().for_each(|c| {
+            self.spritedata[id][i]=hm[&c];
+            i += 1;
+        })
+    });
+  }
+  fn initializeFieldData(&mut self, m: &[(char,u8)], s: &[&str]) {
+    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
+    let mut i = 0;
+    s.iter().for_each(|s| {
+        s.chars().for_each(|c| {
+            self.field[i]=hm[&c];
+            i += 1;
+        })
+    });
   }
   fn getFieldTile (&self, xf: usize, yf: usize) -> u8 {
     self.field[yf*FIELDWIDTH + xf]
@@ -98,36 +131,6 @@ impl Video {
   pub fn setFieldTile(&mut self, id: u8, x: usize, y: usize) {
       self.field[y*FIELDWIDTH+x]=id
   }
-  fn setTileData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
-    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
-    let mut i = 0;
-    s.iter().for_each(|s| {
-        s.chars().for_each(|c| {
-            self.tiledata[id][i]=hm[&c];
-            i += 1;
-        })
-    });
-  }
-  fn setSpriteData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
-    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
-    let mut i = 0;
-    s.iter().for_each(|s| {
-        s.chars().for_each(|c| {
-            self.spritedata[id][i]=hm[&c];
-            i += 1;
-        })
-    });
-  }
-  fn setFieldData(&mut self, m: &[(char,u8)], s: &[&str]) {
-    let hm = m.iter().map(|e|*e).collect::<HashMap<char,u8>>();
-    let mut i = 0;
-    s.iter().for_each(|s| {
-        s.chars().for_each(|c| {
-            self.field[i]=hm[&c];
-            i += 1;
-        })
-    });
-  }
   fn setSpriteLoc(&mut self, i: usize, x: usize, y: usize) {
     self.sprites[i].x = x;
     self.sprites[i].y = y;
@@ -135,8 +138,8 @@ impl Video {
   fn setSpriteIdx(&mut self, i: usize, o: usize) {
     self.sprites[i].id = o;
   }
-  fn rasterizeTilesSprites (&mut self) {
-    // Tiles
+  fn rasterizeTilesSprites(&mut self) {
+    // tiles
     for fy in 0..FIELDHEIGHT {
     for fx in 0..FIELDWIDTH {
       let roffset = fy*TILEVOLUME*FIELDWIDTH + fx*TILEWIDTH;
@@ -147,7 +150,7 @@ impl Video {
       }}
     }}
 
-    // sprite orign 0,0 (not visible) at raster -16,-16, thus fully visible at 16,16
+    // sprites
     for s in 0..SPRITECOUNT {
       if ! self.sprites[s].en { continue }
       let slocx = self.sprites[s].x;
@@ -166,10 +169,9 @@ impl Video {
       }
     }
   }
-
-  fn dumpField(&mut self, mut w: usize, mut h: usize, xr: usize, yr: usize) { // (xr,yr) Pucman's raster-coordinates location
-    w = min(w, RASTERWIDTH);
-    h = min(h, RASTERHEIGHT);
+  fn printField(&mut self, (xr, yr): (usize, usize)) {
+    let w = min(self.term.w, RASTERWIDTH);
+    let h = min(self.term.h, RASTERHEIGHT);
     let mut buff = String::new();
     let mut lastColor=0;
     write!(buff, "\x1b[H\x1b[30m").ok();
@@ -201,9 +203,11 @@ impl Video {
     //print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
   }
 
-} // impl Video
+} // impl Graphics
 
-fn randir (vid: &mut Video, xf: usize, yf: usize, lastdir: usize) -> usize {
+////////////////////////////////////////
+
+fn randir (vid: &mut Graphics, xf: usize, yf: usize, lastdir: usize) -> usize {
    if FIELDWIDTH <= xf || FIELDHEIGHT <= yf { return lastdir }
    let mut i = 0;
    let mut validDirs = [0; 4];
@@ -211,33 +215,43 @@ fn randir (vid: &mut Video, xf: usize, yf: usize, lastdir: usize) -> usize {
    if lastdir!=2 && vid.getFieldTileMod(xf-1, yf)<3 { validDirs[i] = 1; i+=1; }
    if lastdir!=1 && vid.getFieldTileMod(xf+1, yf)<3 { validDirs[i] = 2; i+=1; }
    if lastdir!=0 && vid.getFieldTileMod(xf, yf+1)<3 { validDirs[i] = 3; i+=1; }
-   if 0 == i { return match lastdir { 0 => 3, 3=> 0, 1=>2, 2=>1, _=> lastdir } }
+   if 0 == i { return match lastdir { 0=>3, 3=>0, 1=>2, 2=>1, _=>lastdir } }
    validDirs[(vid.rnd.rnd() % i as u16) as usize]
 }
 
-
-////////////////////////////////////////
+trait Entity {
+  fn enable (&mut self, vid :&mut Graphics);
+  fn tick (&mut self, vid: &mut Graphics);
+  fn loc (&self) -> (usize, usize);
+}
 
 const DMX :[usize; 4] = [0, std::usize::MAX, 1, 0];
 const DMY :[usize; 4] = [std::usize::MAX, 0, 0, 1];
 
-pub struct Ghost {
+////////////////////////////////////////
+
+struct Ghost {
     sprite: usize,
     data: usize,
     fx: usize,
     fy: usize,
     dir: usize,
-    tick: usize
+    tick: usize,
+    xr: usize,
+    yr: usize,
 }
 
 impl Ghost {
-  pub fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Ghost {
-    Ghost{sprite, data, fx, fy, dir, tick: 0}
+  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Box<impl Entity> {
+    Box::new(Ghost{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0})
   }
-  pub fn enable (&mut self, vid :&mut Video) {
+}
+
+impl Entity for Ghost {
+  fn enable (&mut self, vid :&mut Graphics) {
     vid.sprites[self.sprite].en = true;
   }
-  pub fn tick (&mut self, vid: &mut Video) {
+  fn tick (&mut self, vid: &mut Graphics) {
     if ! vid.sprites[self.sprite].en { return }
     let inc = self.tick % 8;
     let xr = (TILEWIDTH*self.fx  - (SPRITEWIDTH - TILEWIDTH)/2   + inc*DMX[self.dir] + SPRITEFIELDRASTERWIDTH) % SPRITEFIELDRASTERWIDTH;
@@ -250,9 +264,14 @@ impl Ghost {
        self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
        self.dir = randir(vid, self.fx, self.fy, self.dir);
     }
+    self.xr = xr;
+    self.yr = yr;
     self.tick += 1;
   }
+  fn loc (&self) -> (usize, usize) { (self.xr, self.yr) }
 }
+
+////////////////////////////////////////
 
 pub struct Pukman {
     sprite: usize,
@@ -266,19 +285,22 @@ pub struct Pukman {
 }
 
 impl Pukman {
-  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Self {
-    Self{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0}
+  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Box<impl Entity> {
+    Box::new(Self{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0})
   }
-  pub fn enable (&mut self, vid :&mut Video) {
+}
+
+impl Entity for Pukman {
+  fn enable (&mut self, vid :&mut Graphics) {
     vid.sprites[self.sprite].en = true;
   }
-  fn tick (&mut self, vid: &mut Video) {
+  fn tick (&mut self, vid: &mut Graphics) {
     if ! vid.sprites[self.sprite].en { return }
     let inc = self.tick % 8;
 
-    // tile coordinate to raster, centered sprite on cell, parametric increment
-    let xr = (TILEWIDTH*self.fx  - (SPRITEWIDTH - TILEWIDTH)/2   + inc*DMX[self.dir] + SPRITEFIELDRASTERWIDTH) % SPRITEFIELDRASTERWIDTH;
-    let yr = (TILEHEIGHT*self.fy - (SPRITEHEIGHT - TILEHEIGHT)/2 + inc*DMY[self.dir] + SPRITEFIELDRASTERHEIGHT) % SPRITEFIELDRASTERHEIGHT;
+    // tile to raster coordinates, center sprite on cell, parametric increment
+    let xr = (TILEWIDTH*self.fx  - (SPRITEWIDTH-TILEWIDTH)/2   + inc*DMX[self.dir] + SPRITEFIELDRASTERWIDTH) % SPRITEFIELDRASTERWIDTH;
+    let yr = (TILEHEIGHT*self.fy - (SPRITEHEIGHT-TILEHEIGHT)/2 + inc*DMY[self.dir] + SPRITEFIELDRASTERHEIGHT) % SPRITEFIELDRASTERHEIGHT;
     vid.setSpriteLoc(self.sprite, xr, yr);
     if 7 == inc {
        self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
@@ -301,44 +323,44 @@ impl Pukman {
     self.yr = yr;
     self.tick += 1;
   }
+  fn loc (&self) -> (usize, usize) { (self.xr, self.yr) }
 }
 
-fn main() {
-    let term = Term::new();
-    let mut vid = &mut Video::new();
-    setData(&mut vid);
+////////////////////////////////////////
 
-    //vid.setFieldTile(2, 0, 0);
-    let mut blinky = Ghost::new(0, 0,  9, 14, 3);
-    let mut pinky  = Ghost::new(1, 8,  18, 14, 1);
-    let mut inky   = Ghost::new(2, 16, 9, 20, 2);
-    let mut clyde  = Ghost::new(3, 24, 18, 20, 0);
-    let mut pukman = Pukman::new(4, 32, 13, 26, 1); // usual 13.5 26
-    let mut pukmana = Pukman::new(5, 32, 1, 4, 3);
-    let mut pukmanb = Pukman::new(6, 32, 1, 4, 3);
-    let mut pukmanc = Pukman::new(7, 32, 1, 4, 3);
+struct ArcadeGame {
+  vid: Graphics,
+  entities: [Box<dyn Entity>; 8],
+}
 
-    print!("\x1bc\x1b[0;30;40m\x1b[H\x1b[J");
-    blinky.enable(vid);
-    pinky.enable(vid);
-    inky.enable(vid);
-    clyde.enable(vid);
-    pukman.enable(vid);
-    //pukmana.enable(vid);
-    //pukmanb.enable(vid);
-    //pukmanc.enable(vid);
-
+impl ArcadeGame {
+  fn new (mut vid: Graphics) -> Self {
+    initializeVideoDataPukman(&mut vid);
+    let entities: [Box<dyn Entity>; 8] = [
+       Ghost::new(0, 0,  9, 14, 3),   //binky
+       Ghost::new(1, 8,  18, 14, 1),  //pinky
+       Ghost::new(2, 16, 9, 20, 2),   //inky
+       Ghost::new(3, 24, 18, 20, 0),  //clyde
+       Pukman::new(4, 32, 13, 26, 1), // 13.5 26
+       Pukman::new(5, 32, 1, 4, 3),
+       Pukman::new(6, 32, 1, 4, 3),
+       Pukman::new(7, 32, 1, 4, 3)];
+    ArcadeGame{vid, entities}
+  }
+  fn start(&mut self) {
+    (0..5).into_iter().for_each(|i| self.entities[i].enable(&mut self.vid));
     loop {
-        blinky.tick(&mut vid);
-        pinky.tick(&mut vid);
-        inky.tick(&mut vid);
-        clyde.tick(&mut vid);
-        pukman.tick(&mut vid);
-        pukmana.tick(&mut vid);
-        pukmanb.tick(&mut vid);
-        pukmanc.tick(&mut vid);
-        vid.rasterizeTilesSprites();
-        vid.dumpField(term.w, term.h, pukman.xr, pukman.yr);
-        sleep(40);
+      self.entities.iter_mut().for_each(|e| e.tick(&mut self.vid));
+      self.vid.rasterizeTilesSprites();
+      self.vid.printField(self.entities[4].loc());
+      sleep(40);
     }
+  }
+}
+
+////////////////////////////////////////
+
+fn main() {
+  ArcadeGame::new(Graphics::new(Term::new()))
+    .start();
 }
