@@ -17,7 +17,7 @@ pub fn setData (vid: &mut Video) {
       " aaaaaaaaaaaaaa ",
       " aa aaa  aaa aa ",
       " a   aa  aa   a ",
-      "                " ]);
+      "                ",]);
     vid.setSpriteData(1, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
       "                ",
       "      aaaa      ",
@@ -34,7 +34,7 @@ pub fn setData (vid: &mut Video) {
       " aaaaaaaaaaaaaa ",
       " aaaa aaaa aaaa ",
       "  aa   aa   aa  ",
-      "                " ]);
+      "                ",]);
     vid.setSpriteData(2, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
       "                ",
       "      aaaa      ",
@@ -51,11 +51,9 @@ pub fn setData (vid: &mut Video) {
       " aaaaaaaaaaaaaa ",
       " aa aaa  aaa aa ",
       " a   aa  aa   a ",
-      "                "
-    ]);
+      "                ",]);
     vid.setSpriteData(3,
-      &[(' ',0), ('(',4), (')',4),
-        ('a',9), ('.',15)], &[
+      &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
       "                ",
       "      aaaa      ",
       "    aaaaaaaa    ",
@@ -88,8 +86,7 @@ pub fn setData (vid: &mut Video) {
       " aaaaaaaaaaaaaa ",
       " aa aaa  aaa aa ",
       " a   aa  aa   a ",
-      "                "
-    ]);
+      "                ",]);
     vid.setSpriteData(5, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
        "                ",
       "      aaaa      ",
@@ -141,7 +138,6 @@ pub fn setData (vid: &mut Video) {
       " aaaa aaaa aaaa ",
       "  aa   aa   aa  ",
       "                ",]);
-
     vid.setSpriteData(8, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
       "                ",
       "      aaaa      ",
@@ -278,7 +274,6 @@ pub fn setData (vid: &mut Video) {
       " aaaa aaaa aaaa ",
       "  aa   aa   aa  ",
       "                ",]);
-
     vid.setSpriteData(16, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
       "                ",
       "      aaaa      ",
@@ -321,7 +316,7 @@ pub fn setData (vid: &mut Video) {
       "  a..aaaa..aaa  ",
       "  ....aa....aa  ",
       "  ()..aa()..aa  ",
-       " a()..aa()..aaa ",
+      " a()..aa()..aaa ",
       " aa..aaaa..aaaa ",
       " aaaaaaaaaaaaaa ",
       " aaaaaaaaaaaaaa ",
@@ -415,7 +410,6 @@ pub fn setData (vid: &mut Video) {
       " aaaa aaaa aaaa ",
       "  aa   aa   aa  ",
       "                ",]);
-
     vid.setSpriteData(24, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
       "                ",
       "      aaaa      ",
@@ -458,7 +452,7 @@ pub fn setData (vid: &mut Video) {
       "  a..aaaa..aaa  ",
       "  ....aa....aa  ",
       "  ()..aa()..aa  ",
-       " a()..aa()..aaa ",
+      " a()..aa()..aaa ",
       " aa..aaaa..aaaa ",
       " aaaaaaaaaaaaaa ",
       " aaaaaaaaaaaaaa ",
@@ -552,6 +546,7 @@ pub fn setData (vid: &mut Video) {
       " aaaa aaaa aaaa ",
       "  aa   aa   aa  ",
       "                ",]);
+    // pukman
 
     vid.setSpriteData(32, &[(' ',0), ('o',11)], &[
       "                ",
@@ -706,7 +701,8 @@ pub fn setData (vid: &mut Video) {
       "                ",
       "                ",
       "                ",]);
-////////////////////
+
+    // tiles
 
     vid.setTileData(0, &[(' ',0)], &[
       "        ",
@@ -735,6 +731,7 @@ pub fn setData (vid: &mut Video) {
       "########",
       " ###### ",
       "  ####  "]);
+
     vid.setTileData(3, &[(' ',0), ('@',4)], &[
       "    @@@@",
       "  @@    ",
@@ -771,6 +768,7 @@ pub fn setData (vid: &mut Video) {
       "      @ ",
       "    @@  ",
       "@@@@    ",]);
+
     vid.setTileData(7, &[(' ',0), ('@',4)], &[
       "@@@@@@@@",
       "        ",
@@ -1033,29 +1031,30 @@ pub fn setData (vid: &mut Video) {
       "--------",
       "--------",
       "        ",]);
+
     vid.setFieldData(&[(' ',0), ('.',1), ('*',2),
-      // Double corners
+      // double corners
       ('A',3), ('B',4), ('C',5), ('D',6),
       ('E',7), ('F',8), ('G',9), ('H',10),
       ('I',11),('J',12),('K',13),('L',14),
-      // Double edges
+      // double edges
       ('M',15), ('N',16), ('O',17), ('P',18),
-      // Single corner narrow
+      // single corner narrow
       ('a',19), ('b',20), ('c',21), ('d',22),
-      // Single corner wide
+      // single corner wide
       ('e',23), ('f',24), ('g',25), ('h',26),
-      // Single edge
+      // single edge
       ('i',27),('j',28),('k',29),('l',30),
-      // Hard corner
+      // hard corner
       ('m',31),('n',32),('o',33),('p',34),
-      // Door
+      // door
       ('q',35)], &[
-      " .*.........................",
-      "ABCDEFGHIJKLMNOP............",
-      "abcdefghijklmnopq...........",
-      "AMMMMMMMMMMMMFEMMMMMMMMMMMMB",
-      "N............jk............O",
-      "N.aiib.aiiib.jk.aiiib.aiib.O",
+      "           N jk O           ",
+      "           N jk O           ",
+      "           N jk O           ",
+      "AMMMMMMMMMMd cd cMMMMMMMMMMB",
+      "N............  ............O",
+      "N.aiib.aiiib.ab.aiiib.aiib.O",
       "N*j  k.j   k.jk.j   k.j  k*O",
       "N.clld.cllld.cd.cllld.clld.O",
       "N..........................O",
@@ -1067,7 +1066,7 @@ pub fn setData (vid: &mut Video) {
       "     N.jk          jk.O     ",
       "     N.jk mPPqqPPn jk.O     ",
       "MMMMMd.cd O      N cd.cMMMMM",
-      "     N.   O      N   .O     ",
+      "      .   O      N   .      ",
       "PPPPPb.ab O      N ab.aPPPPP",
       "     N.jk oMMMMMMp jk.O     ",
       "     N.jk          jk.O     ",
@@ -1083,8 +1082,7 @@ pub fn setData (vid: &mut Video) {
       "N.aiiiihgiib.jk.aiihgiiiib.O",
       "N.clllllllld.cd.clllllllld.O",
       "N..........................O",
-      "CPPPPPPPPPPPPPPPPPPPPPPPPPPD",
-      "............................",
-      "............................",]);
-
+      "CPPPPPPPPPPb ab aPPPPPPPPPPD",
+      "           N jk O           ",
+      "           N jk O           ",]);
 }
