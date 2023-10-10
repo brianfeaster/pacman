@@ -5,7 +5,9 @@ use std::{
   cmp::{max, min},
   collections::HashMap,
   fmt::Write,
-  io::{self, stdout, Stdout},
+  io::{self, stdout, Stdout, stdin, Read},
+  sync::mpsc::{channel},
+  thread,
   usize
 };
 
@@ -207,14 +209,16 @@ impl Graphics {
 
 ////////////////////////////////////////
 
-fn randir (vid: &mut Graphics, xf: usize, yf: usize, lastdir: usize) -> usize {
+fn randir (vid: &mut Graphics, xf: usize, yf: usize, lastdir: usize, go: usize) -> usize {
    if FIELDWIDTH <= xf || FIELDHEIGHT <= yf { return lastdir }
    let mut i = 0;
    let mut validDirs = [0; 4];
-   if lastdir!=3 && vid.getFieldTileMod(xf, yf-1)<3 { validDirs[i] = 0; i+=1; }
-   if lastdir!=2 && vid.getFieldTileMod(xf-1, yf)<3 { validDirs[i] = 1; i+=1; }
-   if lastdir!=1 && vid.getFieldTileMod(xf+1, yf)<3 { validDirs[i] = 2; i+=1; }
-   if lastdir!=0 && vid.getFieldTileMod(xf, yf+1)<3 { validDirs[i] = 3; i+=1; }
+   let mut force = false;
+   if lastdir!=3 && vid.getFieldTileMod(xf, yf-1)<3 { validDirs[i] = 0; i+=1; if go==0 { force=true } }
+   if lastdir!=2 && vid.getFieldTileMod(xf-1, yf)<3 { validDirs[i] = 1; i+=1; if go==1 { force=true } }
+   if lastdir!=1 && vid.getFieldTileMod(xf+1, yf)<3 { validDirs[i] = 2; i+=1; if go==2 { force=true } }
+   if lastdir!=0 && vid.getFieldTileMod(xf, yf+1)<3 { validDirs[i] = 3; i+=1; if go==3 { force=true } }
+   if force { return go }
    if 0 == i { return match lastdir { 0=>3, 3=>0, 1=>2, 2=>1, _=>lastdir } }
    validDirs[(vid.rnd.rnd() % i as u16) as usize]
 }
@@ -223,6 +227,7 @@ trait Entity {
   fn enable (&mut self, vid :&mut Graphics);
   fn tick (&mut self, vid: &mut Graphics);
   fn loc (&self) -> (usize, usize);
+  fn go (&mut self, dir: usize) { }
 }
 
 const DMX :[usize; 4] = [0, std::usize::MAX, 1, 0];
@@ -262,7 +267,7 @@ impl Entity for Ghost {
     if 7 == inc {
        self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
        self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
-       self.dir = randir(vid, self.fx, self.fy, self.dir);
+       self.dir = randir(vid, self.fx, self.fy, self.dir, 4);
     }
     self.xr = xr;
     self.yr = yr;
@@ -282,11 +287,12 @@ pub struct Pukman {
     tick: usize,
     xr: usize,
     yr: usize,
+    go: usize,
 }
 
 impl Pukman {
   fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Box<impl Entity> {
-    Box::new(Self{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0})
+    Box::new(Self{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0, go:4})
   }
 }
 
@@ -305,7 +311,7 @@ impl Entity for Pukman {
     if 7 == inc {
        self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
        self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
-       self.dir = randir(vid, self.fx, self.fy, self.dir);
+       self.dir = randir(vid, self.fx, self.fy, self.dir, self.go);
     }
     // Pukman animation
     vid.setSpriteIdx(self.sprite,
@@ -324,6 +330,7 @@ impl Entity for Pukman {
     self.tick += 1;
   }
   fn loc (&self) -> (usize, usize) { (self.xr, self.yr) }
+  fn go (&mut self, dir: usize) { self.go = dir }
 }
 
 ////////////////////////////////////////
@@ -337,30 +344,45 @@ impl ArcadeGame {
   fn new (mut vid: Graphics) -> Self {
     initializeVideoDataPukman(&mut vid);
     let entities: [Box<dyn Entity>; 8] = [
-       Ghost::new(0, 0,  9, 14, 3),   //binky
-       Ghost::new(1, 8,  18, 14, 1),  //pinky
-       Ghost::new(2, 16, 9, 20, 2),   //inky
-       Ghost::new(3, 24, 18, 20, 0),  //clyde
-       Pukman::new(4, 32, 13, 26, 1), // 13.5 26
-       Pukman::new(5, 32, 1, 4, 3),
-       Pukman::new(6, 32, 1, 4, 3),
-       Pukman::new(7, 32, 1, 4, 3)];
+       Ghost::new(0,   0, 10, 20, 1),  //binky
+       Ghost::new(1,   8, 12, 20, 1),  //pinky
+       Ghost::new(2,  16, 15, 20, 2),  //inky
+       Ghost::new(3,  24, 17, 20, 2),  //clyde
+       Pukman::new(4, 32, 13, 26, 1),  // 13.5 26
+       Pukman::new(5, 32, 1,   4, 3),
+       Pukman::new(6, 32, 1,   4, 3),
+       Pukman::new(7, 32, 1,   4, 3)];
     ArcadeGame{vid, entities}
   }
   fn start(&mut self) {
+    let (tx, rx) = channel::<u8>();
+    let mut si = stdin();
+    thread::spawn(move || loop {
+        let mut b :[u8;1] = [0];
+        si.read(&mut b).unwrap();
+        tx.send(b[0]).unwrap();
+    });
     (0..5).into_iter().for_each(|i| self.entities[i].enable(&mut self.vid));
     loop {
+      match rx.try_recv() {
+        Ok(113)|Ok(27)|Ok(3) => break, // q ESC ^C
+        Ok(104)|Ok(97) => self.entities[4].go(1), // h a
+        Ok(108)|Ok(100) => self.entities[4].go(2),// l d
+        Ok(107)|Ok(119) => self.entities[4].go(0),// k w
+        Ok(106)|Ok(115) => self.entities[4].go(3),// j s
+        n => ()
+      }
       self.entities.iter_mut().for_each(|e| e.tick(&mut self.vid));
       self.vid.rasterizeTilesSprites();
       self.vid.printField(self.entities[4].loc());
       sleep(40);
     }
+    print!("\x1b[m");
   }
 }
 
 ////////////////////////////////////////
 
 fn main() {
-  ArcadeGame::new(Graphics::new(Term::new()))
-    .start();
+  ArcadeGame::new(Graphics::new(Term::new())) .start();
 }
