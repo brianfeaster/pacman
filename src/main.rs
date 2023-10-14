@@ -6,7 +6,7 @@ use std::{
   collections::HashMap,
   fmt::Write,
   io::{self, stdout, Stdout, stdin, Read},
-  sync::mpsc::{channel},
+  sync::mpsc::{channel, Receiver},
   thread,
   usize
 };
@@ -158,7 +158,7 @@ impl Graphics {
       let slocx = self.sprites[s].x;
       let slocy = self.sprites[s].y;
       for cy in 0..SPRITEHEIGHT {
-          let y = (slocy + cy) % SPRITEFIELDRASTERHEIGHT; 
+          let y = (slocy + cy) % SPRITEFIELDRASTERHEIGHT;
           if RASTERHEIGHT <= y { continue }
           for cx in 0..SPRITEWIDTH {
               let x = (slocx + cx) % SPRITEFIELDRASTERWIDTH;
@@ -223,15 +223,40 @@ fn randir (vid: &mut Graphics, xf: usize, yf: usize, lastdir: usize, go: usize) 
    validDirs[(vid.rnd.rnd() % i as u16) as usize]
 }
 
+fn dist (x: usize, y: usize, pxy: (usize, usize)) -> usize {
+  (x-pxy.0)*(x-pxy.0) + (y-pxy.1)*(y-pxy.1)
+}
+
+fn dirchase (vid: &mut Graphics, x: usize, y: usize, lastdir: usize, xyp:( usize,  usize)) -> usize {
+  if FIELDWIDTH <= x || FIELDHEIGHT <= y { return lastdir }
+  let mut i = 0;
+  let mut distance = [usize::MAX; 4];
+  if lastdir!=3 && vid.getFieldTileMod(x, y-1)<3 { distance[0] = dist(x, y-1, xyp); i+=1; }
+  if lastdir!=2 && vid.getFieldTileMod(x-1, y)<3 { distance[1] = dist(x-1, y, xyp); i+=1; }
+  if lastdir!=1 && vid.getFieldTileMod(x+1, y)<3 { distance[2] = dist(x+1, y, xyp); i+=1; }
+  if lastdir!=0 && vid.getFieldTileMod(x, y+1)<3 { distance[3] = dist(x, y+1, xyp); i+=1; }
+  if 0 == i { return match lastdir { 0=>3, 3=>0, 1=>2, 2=>1, _=>lastdir } } // reverse if nother option
+
+  let mut dist = distance[0];
+  let mut d = 0;
+
+  if distance[1]<dist { dist=distance[1]; d=1; }
+  if distance[2]<dist { dist=distance[2]; d=2; }
+  if distance[3]<dist { dist=distance[3]; d=3; }
+  d
+}
+
 trait Entity {
   fn enable (&mut self, vid :&mut Graphics);
   fn tick (&mut self, vid: &mut Graphics);
-  fn loc (&self) -> (usize, usize);
-  fn go (&mut self, dir: usize) { }
+  fn loc (&self) -> (usize, usize) { (0,0) }
+  fn locr (&self) -> (usize, usize) { (0,0) }
+  fn go (&mut self, _dir: usize) { }
+  fn locset (&mut self, _l: &(usize, usize)) { }
 }
 
-const DMX :[usize; 4] = [0, std::usize::MAX, 1, 0];
-const DMY :[usize; 4] = [std::usize::MAX, 0, 0, 1];
+const DMX :[usize; 4] = [0, usize::MAX, 1, 0];
+const DMY :[usize; 4] = [usize::MAX, 0, 0, 1];
 
 ////////////////////////////////////////
 
@@ -252,6 +277,7 @@ impl Ghost {
   }
 }
 
+
 impl Entity for Ghost {
   fn enable (&mut self, vid :&mut Graphics) {
     vid.sprites[self.sprite].en = true;
@@ -265,15 +291,22 @@ impl Entity for Ghost {
     // Ghost animation
     vid.setSpriteIdx(self.sprite, self.data+self.dir*2 + self.tick/8%2);
     if 7 == inc {
-       self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
-       self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
-       self.dir = randir(vid, self.fx, self.fy, self.dir, 4);
+      self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
+      self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
+      self.dir = if vid.rnd.rnd()&7 == 0 {
+        randir(vid, self.fx, self.fy, self.dir, 4)
+      } else {
+        dirchase(vid, self.fx, self.fy, self.dir, (self.xr, self.yr))
+      };
     }
     self.xr = xr;
     self.yr = yr;
     self.tick += 1;
   }
-  fn loc (&self) -> (usize, usize) { (self.xr, self.yr) }
+  fn locset (&mut self, l: &(usize, usize)) {
+    self.xr = l.0;
+    self.yr = l.1;
+  }
 }
 
 ////////////////////////////////////////
@@ -285,7 +318,7 @@ pub struct Pukman {
     fy: usize,
     dir: usize,
     tick: usize,
-    xr: usize,
+    xr: usize, // raster screen position
     yr: usize,
     go: usize,
 }
@@ -329,7 +362,8 @@ impl Entity for Pukman {
     self.yr = yr;
     self.tick += 1;
   }
-  fn loc (&self) -> (usize, usize) { (self.xr, self.yr) }
+  fn loc (&self) -> (usize, usize) { (self.fx, self.fy) }
+  fn locr (&self) -> (usize, usize) { (self.xr, self.yr) }
   fn go (&mut self, dir: usize) { self.go = dir }
 }
 
@@ -337,24 +371,12 @@ impl Entity for Pukman {
 
 struct ArcadeGame {
   vid: Graphics,
-  entities: [Box<dyn Entity>; 8],
+  entities: [Box<dyn Entity>; 5],
+  buttons: Receiver<u8>,
 }
 
 impl ArcadeGame {
   fn new (mut vid: Graphics) -> Self {
-    initializeVideoDataPukman(&mut vid);
-    let entities: [Box<dyn Entity>; 8] = [
-       Ghost::new(0,   0, 10, 20, 1),  //binky
-       Ghost::new(1,   8, 12, 20, 1),  //pinky
-       Ghost::new(2,  16, 15, 20, 2),  //inky
-       Ghost::new(3,  24, 17, 20, 2),  //clyde
-       Pukman::new(4, 32, 13, 26, 1),  // 13.5 26
-       Pukman::new(5, 32, 1,   4, 3),
-       Pukman::new(6, 32, 1,   4, 3),
-       Pukman::new(7, 32, 1,   4, 3)];
-    ArcadeGame{vid, entities}
-  }
-  fn start(&mut self) {
     let (tx, rx) = channel::<u8>();
     let mut si = stdin();
     thread::spawn(move || loop {
@@ -362,19 +384,37 @@ impl ArcadeGame {
         si.read(&mut b).unwrap();
         tx.send(b[0]).unwrap();
     });
-    (0..5).into_iter().for_each(|i| self.entities[i].enable(&mut self.vid));
+    initializeVideoDataPukman(&mut vid);
+    let mut entities: [Box<dyn Entity>; 5] = [
+       Pukman::new(0, 32, 16, 20, 1),  // 13.5 26
+       Ghost::new(1,   0,  9, 20, 0),  //binky
+       Ghost::new(2,   8, 18, 20, 1),  //pinky
+       Ghost::new(3,  16,  9, 14, 2),  //inky
+       Ghost::new(4,  24, 18, 14, 3)]; //clyde
+    entities.iter_mut().for_each(|e| e.enable(&mut vid));
+    ArcadeGame{vid, entities, buttons:rx}
+  }
+
+  fn start(&mut self) {
     loop {
-      match rx.try_recv() {
+      match self.buttons.try_recv() {
         Ok(113)|Ok(27)|Ok(3) => break, // q ESC ^C
-        Ok(104)|Ok(97) => self.entities[4].go(1), // h a
-        Ok(108)|Ok(100) => self.entities[4].go(2),// l d
-        Ok(107)|Ok(119) => self.entities[4].go(0),// k w
-        Ok(106)|Ok(115) => self.entities[4].go(3),// j s
-        n => ()
+        Ok(104)|Ok(97) => self.entities[0].go(1), // h a
+        Ok(108)|Ok(100) => self.entities[0].go(2),// l d
+        Ok(107)|Ok(119) => self.entities[0].go(0),// k w
+        Ok(106)|Ok(115) => self.entities[0].go(3),// j s
+        _ => ()
       }
-      self.entities.iter_mut().for_each(|e| e.tick(&mut self.vid));
+
+      let pm = &mut self.entities[0];
+      pm.tick(&mut self.vid);
+      let pml = pm.loc();
+
+      self.entities.iter_mut().skip(1).for_each(|e| e.locset(&pml));
+      self.entities.iter_mut().skip(1).for_each(|e| e.tick(&mut self.vid));
+
       self.vid.rasterizeTilesSprites();
-      self.vid.printField(self.entities[4].loc());
+      self.vid.printField(self.entities[0].locr());
       sleep(40);
     }
     print!("\x1b[m");
