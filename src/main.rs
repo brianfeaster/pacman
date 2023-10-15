@@ -7,6 +7,7 @@ use std::{
   fmt::Write,
   io::{self, stdout, Stdout, stdin, Read},
   sync::mpsc::{channel, Receiver},
+  time::{SystemTime},
   thread,
   usize
 };
@@ -42,7 +43,7 @@ const FIELDVOLUME: usize = FIELDWIDTH*FIELDHEIGHT;
 const SPRITEWIDTH: usize = 16;
 const SPRITEHEIGHT: usize= 16;
 const SPRITEVOLUME: usize= SPRITEWIDTH*SPRITEHEIGHT;
-const SPRITECOUNT: usize = 8;
+const SPRITECOUNT: usize = 10;
 
 // Includes non-visible right/bottom borders
 const RASTERWIDTH:  usize = TILEWIDTH * FIELDWIDTH;
@@ -75,7 +76,8 @@ pub struct Graphics {
     raster: [u8; TILEVOLUME*FIELDVOLUME],
     last: [u8; TILEVOLUME*FIELDVOLUME],
     rnd: Rnd,
-    msg: String
+    msg: String,
+    topleft: (usize, usize)
 }
 
 impl Graphics {
@@ -91,7 +93,8 @@ impl Graphics {
       raster:    [0;  (TILEVOLUME*FIELDVOLUME)],
       last:      [255;(TILEVOLUME*FIELDVOLUME)],
       rnd:       Rnd::new(),
-      msg:       String::new() 
+      msg:       String::new(),
+      topleft:   (20, 20)
     }
   }
   fn initializeTileData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
@@ -157,7 +160,7 @@ impl Graphics {
           = tiledata [cx + cy*TILEWIDTH]
       }}
     }}
-    write!(self.msg, "{:?}", tilesUpdated).ok();
+    //write!(self.msg, "{:?}", tilesUpdated).ok();
 
     // sprites
     for s in 0..SPRITECOUNT {
@@ -209,6 +212,7 @@ impl Graphics {
     let mut loc=(0,0);
     let top = min(max(0, ((yr+16)%SPRITEFIELDRASTERHEIGHT-8-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize;
     let left= min(max(0, ((xr+16)%SPRITEFIELDRASTERWIDTH -8-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize;
+    self.topleft = (top, left);
     let mut idx = 0;
     let mut ridx = top*RASTERWIDTH+left;
     for y in 0..h {
@@ -240,12 +244,12 @@ impl Graphics {
       }
       ridx += RASTERWIDTH-w;
     }
-    write!(buff, "\x1b[H{}        ", self.msg).ok();
-    self.msg.clear();
+    //write!(buff, "\x1b[H{}        ", self.msg).ok();
+    //self.msg.clear();
     <Stdout as io::Write>::write_all(&mut stdout(), buff.as_bytes()).ok();
     //print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
   }
-
+  fn getTopLeft (&self) -> (usize, usize) { self.topleft }
 } // impl Graphics
 
 ////////////////////////////////////////
@@ -294,6 +298,7 @@ trait Entity {
   fn locr (&self) -> (usize, usize) { (0,0) }
   fn go (&mut self, _dir: usize) { }
   fn locset (&mut self, _l: &(usize, usize)) { }
+  fn getTick (&self) -> usize { 0 }
 }
 
 const DMX :[usize; 4] = [0, usize::MAX, 1, 0];
@@ -406,6 +411,7 @@ impl Entity for Pukman {
   fn loc (&self) -> (usize, usize) { (self.fx, self.fy) }
   fn locr (&self) -> (usize, usize) { (self.xr, self.yr) }
   fn go (&mut self, dir: usize) { self.go = dir }
+  fn getTick (&self) -> usize { self.tick }
 }
 
 ////////////////////////////////////////
@@ -433,9 +439,21 @@ impl ArcadeGame {
       Ghost::new(3,  16,  9, 14, 2),  //inky
       Ghost::new(4,  24, 18, 14, 3)]; //clyde
     entities.iter_mut().for_each(|e| e.enable(&mut vid));
+    vid.sprites[5].en = true;
+    vid.sprites[6].en = true;
+    vid.sprites[7].en = true;
+    vid.sprites[8].en = true;
+    vid.sprites[9].en = true;
     ArcadeGame{vid, entities, buttons:rx}
   }
   fn start(&mut self) {
+    let mut now = SystemTime::now();
+    let mut dur = now.elapsed().unwrap().as_micros() as usize;
+    const fpsSamps: usize = 50;
+    let mut fps: [usize; fpsSamps] = [0; fpsSamps];
+    let mut fpsCount=0;
+    let mut fpsp=0;
+    let mut sum=0;
     loop {
       match self.buttons.try_recv() {
         Ok(113)|Ok(27)|Ok(81)|Ok(3) => break, // q ESC ^C
@@ -448,14 +466,47 @@ impl ArcadeGame {
 
       let pm = &mut self.entities[0];
       pm.tick(&mut self.vid);
-      let pml = pm.loc();
 
+      let (xpm, ypm) = pm.locr();
+      let (top, left) = self.vid.getTopLeft();
+      self.vid.sprites[5].x = left+32;
+      self.vid.sprites[5].y = top+1;
+      self.vid.sprites[5].data=50+dur%10;
+
+      self.vid.sprites[6].x = left+24;
+      self.vid.sprites[6].y = top+1;
+      self.vid.sprites[6].data=50+dur/10%10;
+
+      self.vid.sprites[7].x = left+16;
+      self.vid.sprites[7].y = top+1;
+      self.vid.sprites[7].data=50+dur/100%10;
+
+      self.vid.sprites[8].x = left+8;
+      self.vid.sprites[8].y = top+1;
+      self.vid.sprites[8].data=50+dur/1000%10;
+
+      self.vid.sprites[9].x = left;
+      self.vid.sprites[9].y = top+1;
+      self.vid.sprites[9].data=50+dur/10000%10;
+
+      let pml = pm.loc();
       self.entities.iter_mut().skip(1).for_each(|e| e.locset(&pml));
       self.entities.iter_mut().skip(1).for_each(|e| e.tick(&mut self.vid));
 
       self.vid.rasterizeTilesSprites();
       self.vid.printField(self.entities[0].locr());
-      sleep(30);
+
+      dur = now.elapsed().unwrap().as_micros() as usize;
+      sum = sum - fps[fpsp] + dur;
+      fps[fpsp]=dur;
+      fpsp=(fpsp+1)%fpsSamps;
+      if fpsCount != fpsSamps { fpsCount += 1 }
+      dur = 1000000/(sum / fpsCount) as usize;
+      if 99999 < dur { dur = 99999; }
+
+      sleep(10);
+
+      now = SystemTime::now();
     }
     print!("\x1b[m");
   }

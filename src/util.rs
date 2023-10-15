@@ -1,6 +1,6 @@
 use std::{
   env,
-  io::{Write, stdout, stdin}, thread, time::Duration
+  io::{Write, stdout, stdin}, thread, time::Duration,
 };
 
 ////////////////////////////////////////
