@@ -12,8 +12,9 @@ use std::{
 };
 
 mod data;
-mod util;
 use data::{initializeVideoDataPukman};
+
+mod util;
 pub use util::{sleep, readline, Rnd, Term};
 
 ////////////////////////////////////////
@@ -58,7 +59,7 @@ type SpriteData = [u8; SPRITEVOLUME];
 
 #[derive(Clone,Copy,Default)]
 struct Sprite {
-    id: usize,
+    data: usize,
     x: usize,
     y: usize,
     en: bool,
@@ -66,13 +67,15 @@ struct Sprite {
 
 pub struct Graphics {
     term: Term,
-    tiledata:   [TileData;   TILECOUNT],
+    tiledata: [TileData; TILECOUNT],
     spritedata: [SpriteData; TILECOUNT],
-    field:   [u8;  FIELDVOLUME],
+    field: [u8; FIELDVOLUME],
+    update: [bool; FIELDVOLUME],
     sprites: [Sprite; SPRITECOUNT],
     raster: [u8; TILEVOLUME*FIELDVOLUME],
     last: [u8; TILEVOLUME*FIELDVOLUME],
-    rnd: Rnd
+    rnd: Rnd,
+    msg: String
 }
 
 impl Graphics {
@@ -84,9 +87,11 @@ impl Graphics {
       spritedata:[[0; SPRITEVOLUME]; TILECOUNT],
       sprites:   [Sprite::default(); SPRITECOUNT],
       field:     [63; FIELDVOLUME],
+      update:    [true; FIELDVOLUME],
       raster:    [0;  (TILEVOLUME*FIELDVOLUME)],
       last:      [255;(TILEVOLUME*FIELDVOLUME)],
-      rnd:       Rnd::new()
+      rnd:       Rnd::new(),
+      msg:       String::new() 
     }
   }
   fn initializeTileData(&mut self, id: usize, m: &[(char,u8)], s: &[&str]) {
@@ -126,10 +131,6 @@ impl Graphics {
     self.field[(yf+FIELDHEIGHT)%FIELDHEIGHT*FIELDWIDTH + (xf+FIELDWIDTH)%FIELDWIDTH]
   }
 
-  fn spriteData (&self, id: usize, xs: usize, ys: usize) -> u8 {
-    self.spritedata [self.sprites[id].id] [xs+ys*SPRITEWIDTH]
-  }
-
   pub fn setFieldTile(&mut self, id: u8, x: usize, y: usize) {
       self.field[y*FIELDWIDTH+x]=id
   }
@@ -138,38 +139,66 @@ impl Graphics {
     self.sprites[i].y = y;
   }
   fn setSpriteIdx(&mut self, i: usize, o: usize) {
-    self.sprites[i].id = o;
+    self.sprites[i].data = o;
   }
   fn rasterizeTilesSprites(&mut self) {
     // tiles
+    let mut tilesUpdated = 0;
     for fy in 0..FIELDHEIGHT {
     for fx in 0..FIELDWIDTH {
+      if !self.update[fx+fy*FIELDWIDTH] { continue }
+      tilesUpdated += 1;
+      self.update[fx+fy*FIELDWIDTH]=false;
       let roffset = fy*TILEVOLUME*FIELDWIDTH + fx*TILEWIDTH;
+      let tiledata = self.tiledata [self.getFieldTile(fx, fy) as usize];
       for cy in 0..TILEHEIGHT {
       for cx in 0..TILEWIDTH {
-        self.raster [roffset + cy*RASTERWIDTH + cx]
-          = self.tiledata [self.getFieldTile(fx, fy) as usize] [cy*TILEWIDTH+cx]
+        self.raster [roffset + cx + cy*RASTERWIDTH]
+          = tiledata [cx + cy*TILEWIDTH]
       }}
     }}
+    write!(self.msg, "{:?}", tilesUpdated).ok();
 
     // sprites
     for s in 0..SPRITECOUNT {
       if ! self.sprites[s].en { continue }
-      let slocx = self.sprites[s].x;
+
       let slocy = self.sprites[s].y;
+      let slocx = self.sprites[s].x;
+
+      // dirty tile bit
+      let mut xsf = slocx/TILEWIDTH;
+      let mut ysf = slocy/TILEHEIGHT;
+      if FIELDWIDTH  <= xsf { xsf=FIELDWIDTH-1 }
+      if FIELDHEIGHT <= ysf { ysf=FIELDHEIGHT-1 }
+      self.update[ xsf               + ysf%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+1)%FIELDWIDTH + ysf%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+2)%FIELDWIDTH + ysf%FIELDHEIGHT*FIELDWIDTH] = true;
+
+      self.update[ xsf               + (1+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+1)%FIELDWIDTH + (1+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+2)%FIELDWIDTH + (1+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+
+      self.update[ xsf               + (2+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+1)%FIELDWIDTH + (2+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+      self.update[(xsf+2)%FIELDWIDTH + (2+ysf)%FIELDHEIGHT*FIELDWIDTH] = true;
+
+      let spritedata = self.spritedata[self.sprites[s].data];
+
       for cy in 0..SPRITEHEIGHT {
           let y = (slocy + cy) % SPRITEFIELDRASTERHEIGHT;
           if RASTERHEIGHT <= y { continue }
           for cx in 0..SPRITEWIDTH {
               let x = (slocx + cx) % SPRITEFIELDRASTERWIDTH;
               if RASTERWIDTH <= x { continue }
-              match self.spriteData(s, cx, cy) {
+              match spritedata[cx+cy*SPRITEWIDTH] {
                 0 => continue,
                 b => self.raster[x+y*RASTERWIDTH] = b
-              }
-          }
-      }
-    }
+              } // match
+          } // for x
+      } // for y
+    } // for s
+
   }
   fn printField(&mut self, (xr, yr): (usize, usize)) {
     let w = min(self.term.w, RASTERWIDTH);
@@ -178,29 +207,41 @@ impl Graphics {
     let mut lastColor=0;
     write!(buff, "\x1b[H\x1b[30m").ok();
     let mut loc=(0,0);
+    let top = min(max(0, ((yr+16)%SPRITEFIELDRASTERHEIGHT-8-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize;
+    let left= min(max(0, ((xr+16)%SPRITEFIELDRASTERWIDTH -8-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize;
+    let mut idx = 0;
+    let mut ridx = top*RASTERWIDTH+left;
     for y in 0..h {
-      if 0 != y { write!(buff, "\n").ok(); }
       for x in 0..w {
-        let top = min(max(0, ((yr+16)%SPRITEFIELDRASTERHEIGHT-8-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize;
-        let left= min(max(0, ((xr+16)%SPRITEFIELDRASTERWIDTH -8-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize;
-        let b = self.raster[(y+top)*RASTERWIDTH+x+left];
-        let l = self.last[y*RASTERWIDTH+x];
-
+        let b = self.raster[ridx];
+        let l = self.last[idx];
         if b!=l {
-          if loc != (x, y) {
-              write!(buff, "\x1b[{};{}H", y+1,x+1).ok();
-          }
+          // Update cursor
+          if loc != (x, y) { write!(buff, "\x1b[{};{}H", y+1,x+1).ok(); }
           if lastColor != b {
-             write!(buff, "\x1b[38;5;{}m{BLK}", b).ok();
-             lastColor = b;
+            if 0==b {
+              write!(buff, " ").ok();
+            } else {
+              write!(buff, "\x1b[38;5;{}m{BLK}", b).ok();
+              lastColor = b;
+            }
           } else {
-             write!(buff, "{BLK}").ok();
+            if 0==b {
+              write!(buff, " ").ok();
+            } else {
+              write!(buff, "{BLK}").ok();
+            }
           }
-          self.last[y*TILEWIDTH*FIELDWIDTH+x] = b;
+          self.last[idx] = b;
           loc = (x+1, y);
         }
+        ridx += 1;
+        idx += 1;
       }
+      ridx += RASTERWIDTH-w;
     }
+    write!(buff, "\x1b[H{}        ", self.msg).ok();
+    self.msg.clear();
     <Stdout as io::Write>::write_all(&mut stdout(), buff.as_bytes()).ok();
     //print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
   }
@@ -242,7 +283,7 @@ fn dirchase (vid: &mut Graphics, x: usize, y: usize, lastdir: usize, xyp:( usize
 
   if distance[1]<dist { dist=distance[1]; d=1; }
   if distance[2]<dist { dist=distance[2]; d=2; }
-  if distance[3]<dist { dist=distance[3]; d=3; }
+  if distance[3]<dist { d=3; }
   d
 }
 
@@ -386,19 +427,18 @@ impl ArcadeGame {
     });
     initializeVideoDataPukman(&mut vid);
     let mut entities: [Box<dyn Entity>; 5] = [
-       Pukman::new(0, 32, 16, 20, 1),  // 13.5 26
-       Ghost::new(1,   0,  9, 20, 0),  //binky
-       Ghost::new(2,   8, 18, 20, 1),  //pinky
-       Ghost::new(3,  16,  9, 14, 2),  //inky
-       Ghost::new(4,  24, 18, 14, 3)]; //clyde
+      Pukman::new(0, 32, 16, 20, 1),  // 13.5 26
+      Ghost::new(1,   0,  9, 20, 0),  //binky
+      Ghost::new(2,   8, 18, 20, 1),  //pinky
+      Ghost::new(3,  16,  9, 14, 2),  //inky
+      Ghost::new(4,  24, 18, 14, 3)]; //clyde
     entities.iter_mut().for_each(|e| e.enable(&mut vid));
     ArcadeGame{vid, entities, buttons:rx}
   }
-
   fn start(&mut self) {
     loop {
       match self.buttons.try_recv() {
-        Ok(113)|Ok(27)|Ok(3) => break, // q ESC ^C
+        Ok(113)|Ok(27)|Ok(81)|Ok(3) => break, // q ESC ^C
         Ok(104)|Ok(97) => self.entities[0].go(1), // h a
         Ok(108)|Ok(100) => self.entities[0].go(2),// l d
         Ok(107)|Ok(119) => self.entities[0].go(0),// k w
@@ -415,7 +455,7 @@ impl ArcadeGame {
 
       self.vid.rasterizeTilesSprites();
       self.vid.printField(self.entities[0].locr());
-      sleep(40);
+      sleep(30);
     }
     print!("\x1b[m");
   }
@@ -424,5 +464,5 @@ impl ArcadeGame {
 ////////////////////////////////////////
 
 fn main() {
-  ArcadeGame::new(Graphics::new(Term::new())) .start();
+  ArcadeGame::new(Graphics::new(Term::new())).start();
 }
