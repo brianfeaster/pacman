@@ -146,11 +146,9 @@ impl Graphics {
   }
   fn rasterizeTilesSprites(&mut self) {
     // tiles
-    let mut tilesUpdated = 0;
     for fy in 0..FIELDHEIGHT {
     for fx in 0..FIELDWIDTH {
       if !self.update[fx+fy*FIELDWIDTH] { continue }
-      tilesUpdated += 1;
       self.update[fx+fy*FIELDWIDTH]=false;
       let roffset = fy*TILEVOLUME*FIELDWIDTH + fx*TILEWIDTH;
       let tiledata = self.tiledata [self.getFieldTile(fx, fy) as usize];
@@ -160,7 +158,6 @@ impl Graphics {
           = tiledata [cx + cy*TILEWIDTH]
       }}
     }}
-    //write!(self.msg, "{:?}", tilesUpdated).ok();
 
     // sprites
     for s in 0..SPRITECOUNT {
@@ -244,9 +241,9 @@ impl Graphics {
       }
       ridx += RASTERWIDTH-w;
     }
-    //write!(buff, "\x1b[H{}        ", self.msg).ok();
-    //self.msg.clear();
     <Stdout as io::Write>::write_all(&mut stdout(), buff.as_bytes()).ok();
+    print!("\x1b[H\x1b[37m{}\x1b[H", self.msg);
+    self.msg.clear();
     //print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
   }
   fn getTopLeft (&self) -> (usize, usize) { self.topleft }
@@ -291,14 +288,28 @@ fn dirchase (vid: &mut Graphics, x: usize, y: usize, lastdir: usize, xyp:( usize
   d
 }
 
+fn dirrun (vid: &mut Graphics, x: usize, y: usize, lastdir: usize, xyp:( usize,  usize)) -> usize {
+  if FIELDWIDTH <= x || FIELDHEIGHT <= y { return lastdir }
+  let mut i = 0;
+  let mut distance = [0; 4];
+  if lastdir!=3 && vid.getFieldTileMod(x, y-1)<3 { distance[0] = dist(x, y-1, xyp); i+=1; }
+  if lastdir!=2 && vid.getFieldTileMod(x-1, y)<3 { distance[1] = dist(x-1, y, xyp); i+=1; }
+  if lastdir!=1 && vid.getFieldTileMod(x+1, y)<3 { distance[2] = dist(x+1, y, xyp); i+=1; }
+  if lastdir!=0 && vid.getFieldTileMod(x, y+1)<3 { distance[3] = dist(x, y+1, xyp); i+=1; }
+  if 0 == i { return match lastdir { 0=>3, 3=>0, 1=>2, 2=>1, _=>lastdir } } // reverse if nother option
+
+  let mut dist = distance[0];
+  let mut d = 0;
+
+  if dist<distance[1] { dist=distance[1]; d=1; }
+  if dist<distance[2] { dist=distance[2]; d=2; }
+  if dist<distance[3] { d=3; }
+  d
+}
+
 trait Entity {
   fn enable (&mut self, vid :&mut Graphics);
   fn tick (&mut self, vid: &mut Graphics);
-  fn loc (&self) -> (usize, usize) { (0,0) }
-  fn locr (&self) -> (usize, usize) { (0,0) }
-  fn go (&mut self, _dir: usize) { }
-  fn locset (&mut self, _l: &(usize, usize)) { }
-  fn getTick (&self) -> usize { 0 }
 }
 
 const DMX :[usize; 4] = [0, usize::MAX, 1, 0];
@@ -315,11 +326,16 @@ struct Ghost {
     tick: usize,
     xr: usize,
     yr: usize,
+    scared: bool
 }
 
 impl Ghost {
-  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Box<impl Entity> {
-    Box::new(Ghost{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0})
+  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Ghost {
+    Ghost{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0, scared:false}
+  }
+  fn setDesiredLoc (&mut self, locf: &(usize, usize)) {
+    self.xr = locf.0;
+    self.yr = locf.1;
   }
 }
 
@@ -334,24 +350,33 @@ impl Entity for Ghost {
     let xr = (TILEWIDTH*self.fx  - (SPRITEWIDTH - TILEWIDTH)/2   + inc*DMX[self.dir] + SPRITEFIELDRASTERWIDTH) % SPRITEFIELDRASTERWIDTH;
     let yr = (TILEHEIGHT*self.fy - (SPRITEHEIGHT - TILEHEIGHT)/2 + inc*DMY[self.dir] + SPRITEFIELDRASTERHEIGHT) % SPRITEFIELDRASTERHEIGHT;
     vid.setSpriteLoc(self.sprite, xr, yr);
+
     // Ghost animation
-    vid.setSpriteIdx(self.sprite, self.data+self.dir*2 + self.tick/8%2);
+    if self.scared { // scared or normal ghost
+      vid.setSpriteIdx(self.sprite, 41 + self.tick/8%2);
+    } else {
+      vid.setSpriteIdx(self.sprite, self.data+self.dir*2 + self.tick/8%2);
+    }
+
     if 7 == inc {
       self.fx = (self.fx + DMX[self.dir] + SPRITEFIELDWIDTH) % SPRITEFIELDWIDTH;
       self.fy = (self.fy + DMY[self.dir] + SPRITEFIELDHEIGHT) % SPRITEFIELDHEIGHT;
-      self.dir = if vid.rnd.rnd()&7 == 0 {
-        randir(vid, self.fx, self.fy, self.dir, 4)
+
+      self.dir = if self.scared {
+         dirrun(vid, self.fx, self.fy, self.dir, (self.xr, self.yr))
       } else {
-        dirchase(vid, self.fx, self.fy, self.dir, (self.xr, self.yr))
+        if vid.rnd.rnd()&7 == 0 {
+          randir(vid, self.fx, self.fy, self.dir, 4)
+        } else {
+          dirchase(vid, self.fx, self.fy, self.dir, (self.xr, self.yr))
+        }
       };
+
     }
+
     self.xr = xr;
     self.yr = yr;
     self.tick += 1;
-  }
-  fn locset (&mut self, l: &(usize, usize)) {
-    self.xr = l.0;
-    self.yr = l.1;
   }
 }
 
@@ -367,12 +392,17 @@ pub struct Pukman {
     xr: usize, // raster screen position
     yr: usize,
     go: usize,
+    hugry: usize
 }
 
 impl Pukman {
-  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Box<impl Entity> {
-    Box::new(Self{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0, go:4})
+  fn new (sprite: usize, data: usize, fx: usize, fy: usize, dir: usize) -> Pukman {
+    Pukman{sprite, data, fx, fy, dir, tick:0, xr:0, yr:0, go:4, hugry:0}
   }
+  fn hungry (&self) -> usize { self.hugry }
+  fn go (&mut self, dir: usize) { self.go = dir }
+  fn locField (&self) -> (usize, usize) { (self.fx, self.fy) }
+  fn locRaster (&self) -> (usize, usize) { (self.xr, self.yr) }
 }
 
 impl Entity for Pukman {
@@ -403,114 +433,137 @@ impl Entity for Pukman {
       }
     );
     // disappear pill
-    if 0 == self.tick%8 && self.fx < FIELDWIDTH && self.fy < FIELDHEIGHT { vid.setFieldTile(0, self.fx, self.fy); }
+    if 0 == self.tick%8 && self.fx < FIELDWIDTH && self.fy < FIELDHEIGHT {
+        if 2 == vid.getFieldTile(self.fx, self.fy) {
+          self.hugry = 512
+        }
+        vid.setFieldTile(0, self.fx, self.fy);
+    }
+    if 0 < self.hugry { self.hugry -= 1 }
+
     self.xr = xr;
     self.yr = yr;
     self.tick += 1;
   }
-  fn loc (&self) -> (usize, usize) { (self.fx, self.fy) }
-  fn locr (&self) -> (usize, usize) { (self.xr, self.yr) }
-  fn go (&mut self, dir: usize) { self.go = dir }
-  fn getTick (&self) -> usize { self.tick }
-}
+} // impl Entity
+ 
 
 ////////////////////////////////////////
 
 struct ArcadeGame {
   vid: Graphics,
-  entities: [Box<dyn Entity>; 5],
-  buttons: Receiver<u8>,
+  keyboard: Receiver<u8>,
+  pukman: Pukman,
+  ghosts: [Ghost; 4]
 }
 
 impl ArcadeGame {
+
   fn new (mut vid: Graphics) -> Self {
-    let (tx, rx) = channel::<u8>();
-    let mut si = stdin();
-    thread::spawn(move || loop {
-        let mut b :[u8;1] = [0];
-        si.read(&mut b).unwrap();
-        tx.send(b[0]).unwrap();
-    });
+    let keyboard = ArcadeGame::initKeyboardReader();
     initializeVideoDataPukman(&mut vid);
-    let mut entities: [Box<dyn Entity>; 5] = [
-      Pukman::new(0, 32, 16, 20, 1),  // 13.5 26
+    let mut pukman = Pukman::new(0, 32, 16, 20, 1);  // 13.5 26
+    let mut ghosts = [
       Ghost::new(1,   0,  9, 20, 0),  //binky
       Ghost::new(2,   8, 18, 20, 1),  //pinky
       Ghost::new(3,  16,  9, 14, 2),  //inky
       Ghost::new(4,  24, 18, 14, 3)]; //clyde
-    entities.iter_mut().for_each(|e| e.enable(&mut vid));
+
+    // Enable sprites:  pukman, ghosts, FPS digits
+    pukman.enable(&mut vid);
+    ghosts.iter_mut().for_each(|g| g.enable(&mut vid));
     vid.sprites[5].en = true;
     vid.sprites[6].en = true;
     vid.sprites[7].en = true;
     vid.sprites[8].en = true;
     vid.sprites[9].en = true;
-    ArcadeGame{vid, entities, buttons:rx}
+
+    ArcadeGame{vid, keyboard, pukman, ghosts}
+  } // fn new
+
+  fn initKeyboardReader () -> Receiver<u8> {
+    let (fifo_in, fifo_out) = channel::<u8>();
+    let mut si = stdin();
+    thread::spawn(move || loop {
+        let mut b :[u8;1] = [0];
+        si.read(&mut b).unwrap();
+        fifo_in.send(b[0]).unwrap();
+    });
+    fifo_out
   }
+
+  fn setScore (&mut self, val: usize) {
+      let (top, left) = self.vid.getTopLeft();
+      self.vid.sprites[5].x = left+32;
+      self.vid.sprites[5].y = top+1;
+      self.vid.sprites[5].data=50+val%10;
+
+      self.vid.sprites[6].x = left+24;
+      self.vid.sprites[6].y = top+1;
+      self.vid.sprites[6].data=50+val/10%10;
+
+      self.vid.sprites[7].x = left+16;
+      self.vid.sprites[7].y = top+1;
+      self.vid.sprites[7].data=50+val/100%10;
+
+      self.vid.sprites[8].x = left+8;
+      self.vid.sprites[8].y = top+1;
+      self.vid.sprites[8].data=50+val/1000%10;
+
+      self.vid.sprites[9].x = left;
+      self.vid.sprites[9].y = top+1;
+      self.vid.sprites[9].data=50+val/10000%10;
+
+  }
+
   fn start(&mut self) {
     let mut now = SystemTime::now();
     let mut dur = now.elapsed().unwrap().as_micros() as usize;
-    const fpsSamps: usize = 50;
-    let mut fps: [usize; fpsSamps] = [0; fpsSamps];
+    const FPS_SAMPLES: usize = 50;
+    let mut fps: [usize; FPS_SAMPLES] = [0; FPS_SAMPLES];
     let mut fpsCount=0;
     let mut fpsp=0;
     let mut sum=0;
     loop {
-      match self.buttons.try_recv() {
-        Ok(113)|Ok(27)|Ok(81)|Ok(3) => break, // q ESC ^C
-        Ok(104)|Ok(97) => self.entities[0].go(1), // h a
-        Ok(108)|Ok(100) => self.entities[0].go(2),// l d
-        Ok(107)|Ok(119) => self.entities[0].go(0),// k w
-        Ok(106)|Ok(115) => self.entities[0].go(3),// j s
+      
+      match self.keyboard.try_recv() {
+        Ok(3)|Ok(27)|Ok(81)|Ok(113) => break, // Quit: ^C ESC q Q
+        Ok(104)|Ok(97) =>  self.pukman.go(1), // Left: h a
+        Ok(108)|Ok(100) => self.pukman.go(2), // Right: l d
+        Ok(107)|Ok(119) => self.pukman.go(0), // Up: k w
+        Ok(106)|Ok(115) => self.pukman.go(3), // Down: j s
         _ => ()
       }
+      self.vid.msg = format!("{}", ["^", "<", ">", "v", "*"][self.pukman.go]); // DB dump direction
 
-      let pm = &mut self.entities[0];
-      pm.tick(&mut self.vid);
+      self.pukman.tick(&mut self.vid);
 
-      let (xpm, ypm) = pm.locr();
-      let (top, left) = self.vid.getTopLeft();
-      self.vid.sprites[5].x = left+32;
-      self.vid.sprites[5].y = top+1;
-      self.vid.sprites[5].data=50+dur%10;
-
-      self.vid.sprites[6].x = left+24;
-      self.vid.sprites[6].y = top+1;
-      self.vid.sprites[6].data=50+dur/10%10;
-
-      self.vid.sprites[7].x = left+16;
-      self.vid.sprites[7].y = top+1;
-      self.vid.sprites[7].data=50+dur/100%10;
-
-      self.vid.sprites[8].x = left+8;
-      self.vid.sprites[8].y = top+1;
-      self.vid.sprites[8].data=50+dur/1000%10;
-
-      self.vid.sprites[9].x = left;
-      self.vid.sprites[9].y = top+1;
-      self.vid.sprites[9].data=50+dur/10000%10;
-
-      let pml = pm.loc();
-      self.entities.iter_mut().skip(1).for_each(|e| e.locset(&pml));
-      self.entities.iter_mut().skip(1).for_each(|e| e.tick(&mut self.vid));
+      self.setScore(dur);
+      self.ghosts.iter_mut().for_each(|g| {
+        g.scared = 0 < self.pukman.hungry();
+        g.setDesiredLoc(&self.pukman.locField());
+        g.tick(&mut self.vid)
+      });
 
       self.vid.rasterizeTilesSprites();
-      self.vid.printField(self.entities[0].locr());
+      self.vid.printField(self.pukman.locRaster());
 
       dur = now.elapsed().unwrap().as_micros() as usize;
       sum = sum - fps[fpsp] + dur;
       fps[fpsp]=dur;
-      fpsp=(fpsp+1)%fpsSamps;
-      if fpsCount != fpsSamps { fpsCount += 1 }
+      fpsp=(fpsp+1)%FPS_SAMPLES;
+      if fpsCount != FPS_SAMPLES { fpsCount += 1 }
       dur = 1000000/(sum / fpsCount) as usize;
       if 99999 < dur { dur = 99999; }
 
-      sleep(10);
+      sleep(40);
 
       now = SystemTime::now();
     }
     print!("\x1b[m");
-  }
-}
+  } // fn start
+
+} // impl ArcadeGame
 
 ////////////////////////////////////////
 
