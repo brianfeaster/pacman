@@ -1,708 +1,151 @@
 use crate::Graphics;
 
-pub fn initializeVideoDataPukman (vid: &mut Graphics) {
-  vid.initializeSpriteData(0, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(1, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(2, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(3,
-    &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(4, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaa..aaaa..a  ",
-    "  aa....aa....  ",
-    "  aa..()aa..()  ",
-    " aaa..()aa..()a ",
-    " aaaa..aaaa..aa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(5, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-     "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaa..aaaa..a  ",
-    "  aa....aa....  ",
-    "  aa..()aa..()  ",
-    " aaa..()aa..()a ",
-    " aaaa..aaaa..aa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(6, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(7, &[(' ',0), ('(',4), (')',4), ('a',9), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(8, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(9, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(10, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-     " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(11, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(12, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-     "                ",
-     "      aaaa      ",
-     "    aaaaaaaa    ",
-     "   aaaaaaaaaa   ",
-     "  aaa..aaaa..a  ",
-     "  aa....aa....  ",
-     "  aa..()aa..()  ",
-     " aaa..()aa..()a ",
-     " aaaa..aaaa..aa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aa aaa  aaa aa ",
-     " a   aa  aa   a ",
-     "                "]);
-  vid.initializeSpriteData(13, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaa..aaaa..a  ",
-    "  aa....aa....  ",
-    "  aa..()aa..()  ",
-    " aaa..()aa..()a ",
-    " aaaa..aaaa..aa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(14, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(15, &[(' ',0), ('(',4), (')',4), ('a',13), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(16, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(17, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(18, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(19, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(20, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-     "                ",
-     "      aaaa      ",
-     "    aaaaaaaa    ",
-     "   aaaaaaaaaa   ",
-     "  aaa..aaaa..a  ",
-     "  aa....aa....  ",
-     "  aa..()aa..()  ",
-     " aaa..()aa..()a ",
-     " aaaa..aaaa..aa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aa aaa  aaa aa ",
-     " a   aa  aa   a ",
-     "                "]);
-  vid.initializeSpriteData(21, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaa..aaaa..a  ",
-    "  aa....aa....  ",
-    "  aa..()aa..()  ",
-    " aaa..()aa..()a ",
-    " aaaa..aaaa..aa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(22, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(23, &[(' ',0), ('(',4), (')',4), ('a',14), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(24, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(25, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    ()aaaa()    ",
-    "   .().aa.().   ",
-    "  a....aa....a  ",
-    "  a....aa....a  ",
-    "  aa..aaaa..aa  ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(26, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(27, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  a..aaaa..aaa  ",
-    "  ....aa....aa  ",
-    "  ()..aa()..aa  ",
-    " a()..aa()..aaa ",
-    " aa..aaaa..aaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(28, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-     "                ",
-     "      aaaa      ",
-     "    aaaaaaaa    ",
-     "   aaaaaaaaaa   ",
-     "  aaa..aaaa..a  ",
-     "  aa....aa....  ",
-     "  aa..()aa..()  ",
-     " aaa..()aa..()a ",
-     " aaaa..aaaa..aa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aaaaaaaaaaaaaa ",
-     " aa aaa  aaa aa ",
-     " a   aa  aa   a ",
-     "                "]);
-  vid.initializeSpriteData(29, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaa..aaaa..a  ",
-    "  aa....aa....  ",
-    "  aa..()aa..()  ",
-    " aaa..()aa..()a ",
-    " aaaa..aaaa..aa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  vid.initializeSpriteData(30, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aa aaa  aaa aa ",
-    " a   aa  aa   a ",
-    "                ",]);
-  vid.initializeSpriteData(31, &[(' ',0), ('(',4), (')',4), ('a',3), ('.',15)], &[
-    "                ",
-    "      aaaa      ",
-    "    aaaaaaaa    ",
-    "   aaaaaaaaaa   ",
-    "  aaaaaaaaaaaa  ",
-    "  aa..aaaa..aa  ",
-    "  a....aa....a  ",
-    " aa....aa....aa ",
-    " aa.().aa.().aa ",
-    " aaa()aaaa()aaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaaaaaaaaaaaa ",
-    " aaaa aaaa aaaa ",
-    "  aa   aa   aa  ",
-    "                ",]);
-  // pukman
 
-  vid.initializeSpriteData(32, &[(' ',0), ('o',11)], &[
+fn writeGhost2048b (vid: &mut Graphics) -> usize {
+  vid.initializeMemory(&[
+    // up 0
     "                ",
-    "     ooooo      ",
-    "   ooooooooo    ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    " ooooooooooooo  ",
-    " ooooooooooooo  ",
-    " ooooooooooooo  ",
-    " ooooooooooooo  ",
-    " ooooooooooooo  ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "   ooooooooo    ",
-    "     ooooo      ",
+    "      aaaa      ",
+    "    ##aaaa##    ",
+    "   .##.aa.##.   ",
+    "  a....aa....a  ",
+    "  a....aa....a  ",
+    "  aa..aaaa..aa  ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aa aaa  aaa aa ",
+    " a   aa  aa   a ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(33, &[(' ',0), ('o',11)], &[
+    // up 1
     "                ",
+    "      aaaa      ",
+    "    ##aaaa##    ",
+    "   .##.aa.##.   ",
+    "  a....aa....a  ",
+    "  a....aa....a  ",
+    "  aa..aaaa..aa  ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaa aaaa aaaa ",
+    "  aa   aa   aa  ",
     "                ",
-    "   oo     oo    ",
-    "  ooo     ooo   ",
-    "  oooo   oooo   ",
-    " ooooo   ooooo  ",
-    " ooooo   ooooo  ",
-    " oooooo oooooo  ",
-    " oooooo oooooo  ",
-    " oooooo oooooo  ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "   ooooooooo    ",
-    "     ooooo      ",
+    // left 0
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(34, &[(' ',0), ('o',11)], &[
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  a..aaaa..aaa  ",
+    "  ....aa....aa  ",
+    "  ##..aa##..aa  ",
+    " a##..aa##..aaa ",
+    " aa..aaaa..aaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aa aaa  aaa aa ",
+    " a   aa  aa   a ",
     "                ",
+    // left 1
     "                ",
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  a..aaaa..aaa  ",
+    "  ....aa....aa  ",
+    "  ##..aa##..aa  ",
+    " a##..aa##..aaa ",
+    " aa..aaaa..aaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaa aaaa aaaa ",
+    "  aa   aa   aa  ",
     "                ",
+    // right 0
     "                ",
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  aaa..aaaa..a  ",
+    "  aa....aa....  ",
+    "  aa..##aa..##  ",
+    " aaa..##aa..##a ",
+    " aaaa..aaaa..aa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aa aaa  aaa aa ",
+    " a   aa  aa   a ",
     "                ",
-    " oo         oo  ",
-    " ooo       ooo  ",
-    " oooo     oooo  ",
-    " ooooo   ooooo  ",
-    " oooooo oooooo  ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "   ooooooooo    ",
-    "     ooooo      ",
+    // right 1
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(35, &[(' ',0), ('o',11)], &[
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  aaa..aaaa..a  ",
+    "  aa....aa....  ",
+    "  aa..##aa..##  ",
+    " aaa..##aa..##a ",
+    " aaaa..aaaa..aa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaa aaaa aaaa ",
+    "  aa   aa   aa  ",
     "                ",
-    "     ooooo      ",
-    "   ooooooooo    ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "    oooooooooo  ",
-    "       ooooooo  ",
-    "          oooo  ",
-    "       ooooooo  ",
-    "    oooooooooo  ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "   ooooooooo    ",
-    "     ooooo      ",
+    // down 0
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(36, &[(' ',0), ('o',11)], &[
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  aaaaaaaaaaaa  ",
+    "  aa..aaaa..aa  ",
+    "  a....aa....a  ",
+    " aa....aa....aa ",
+    " aa.##.aa.##.aa ",
+    " aaa##aaaa##aaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aa aaa  aaa aa ",
+    " a   aa  aa   a ",
     "                ",
-    "     ooooo      ",
-    "     ooooooo    ",
-    "     oooooooo   ",
-    "       oooooo   ",
-    "        oooooo  ",
-    "         ooooo  ",
-    "          oooo  ",
-    "         ooooo  ",
-    "        oooooo  ",
-    "       oooooo   ",
-    "      ooooooo   ",
-    "     ooooooo    ",
-    "     ooooo      ",
+    // down 1
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(37, &[(' ',0), ('o',11)], &[
-    "                ",
-    "     ooooo      ",
-    "   ooooooooo    ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    " oooooooooo     ",
-    " ooooooo        ",
-    " oooo           ",
-    " ooooooo        ",
-    " oooooooooo     ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    "   ooooooooo    ",
-    "     ooooo      ",
-    "                ",
-    "                ",]);
-  vid.initializeSpriteData(38, &[(' ',0), ('o',11)], &[
-    "                ",
-    "     ooooo      ",
-    "   ooooooo      ",
-    "  ooooooo       ",
-    "  oooooo        ",
-    " oooooo         ",
-    " ooooo          ",
-    " oooo           ",
-    " ooooo          ",
-    " oooooo         ",
-    "  oooooo        ",
-    "  ooooooo       ",
-    "   ooooooo      ",
-    "     ooooo      ",
-    "                ",
-    "                ",]);
-  vid.initializeSpriteData(39, &[(' ',0), ('o',11)], &[
-    "                ",
-    "     ooooo      ",
-    "   ooooooooo    ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    " oooooo oooooo  ",
-    " oooooo oooooo  ",
-    " oooooo oooooo  ",
-    " ooooo   ooooo  ",
-    " ooooo   ooooo  ",
-    "  oooo   oooo   ",
-    "  ooo     ooo   ",
-    "   oo     oo    ",
-    "                ",
-    "                ",
-    "                ",]);
-  vid.initializeSpriteData(40, &[(' ',0), ('o',11)], &[
-    "                ",
-    "     ooooo      ",
-    "   ooooooooo    ",
-    "  ooooooooooo   ",
-    "  ooooooooooo   ",
-    " oooooo oooooo  ",
-    " ooooo   ooooo  ",
-    " oooo     oooo  ",
-    " ooo       ooo  ",
-    " oo         oo  ",
-    "                ",
-    "                ",
-    "                ",
-    "                ",
-    "                ",
-    "                ",]);
+    "      aaaa      ",
+    "    aaaaaaaa    ",
+    "   aaaaaaaaaa   ",
+    "  aaaaaaaaaaaa  ",
+    "  aa..aaaa..aa  ",
+    "  a....aa....a  ",
+    " aa....aa....aa ",
+    " aa.##.aa.##.aa ",
+    " aaa##aaaa##aaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaaaaaaaaaaaa ",
+    " aaaa aaaa aaaa ",
+    "  aa   aa   aa  ",
+    "                ",])
+} // writeGhost2048b
 
-  vid.initializeSpriteData(41, &[(' ',0), ('#', 4), ('.',7)], &[
+
+fn writeScaredGhost512b (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('.',7)]);
+  vid.initializeMemory(&[
+    // scared ghost 0
     "                ",
     "      ####      ",
     "    ########    ",
@@ -718,8 +161,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     " ############## ",
     " ## ###  ### ## ",
     " #   ##  ##   # ",
-    "                ",]);
-  vid.initializeSpriteData(42, &[(' ',0), ('#', 4), ('.',7)], &[
+    "                ",
+    // scared ghost 0
     "                ",
     "      ####      ",
     "    ########    ",
@@ -735,9 +178,171 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     " ############## ",
     " #### #### #### ",
     "  ##   ##   ##  ",
-    "                ",]);
+    "                ",])
+} // writeScaredGhost512b
 
-  vid.initializeSpriteData(50, &[(' ',0), ('x',11)], &[
+
+fn writePukman2304b (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('o',11)]);
+  vid.initializeMemory(&[
+    "                ",
+    "     ooooo      ",
+    "   ooooooooo    ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    " ooooooooooooo  ",
+    " ooooooooooooo  ",
+    " ooooooooooooo  ",
+    " ooooooooooooo  ",
+    " ooooooooooooo  ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "   ooooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "                ",
+    "   oo     oo    ",
+    "  ooo     ooo   ",
+    "  oooo   oooo   ",
+    " ooooo   ooooo  ",
+    " ooooo   ooooo  ",
+    " oooooo oooooo  ",
+    " oooooo oooooo  ",
+    " oooooo oooooo  ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "   ooooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    " oo         oo  ",
+    " ooo       ooo  ",
+    " oooo     oooo  ",
+    " ooooo   ooooo  ",
+    " oooooo oooooo  ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "   ooooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "   ooooooooo    ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "    oooooooooo  ",
+    "       ooooooo  ",
+    "          oooo  ",
+    "       ooooooo  ",
+    "    oooooooooo  ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "   ooooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "     ooooooo    ",
+    "     oooooooo   ",
+    "       oooooo   ",
+    "        oooooo  ",
+    "         ooooo  ",
+    "          oooo  ",
+    "         ooooo  ",
+    "        oooooo  ",
+    "       oooooo   ",
+    "      ooooooo   ",
+    "     ooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "   ooooooooo    ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    " oooooooooo     ",
+    " ooooooo        ",
+    " oooo           ",
+    " ooooooo        ",
+    " oooooooooo     ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    "   ooooooooo    ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "   ooooooo      ",
+    "  ooooooo       ",
+    "  oooooo        ",
+    " oooooo         ",
+    " ooooo          ",
+    " oooo           ",
+    " ooooo          ",
+    " oooooo         ",
+    "  oooooo        ",
+    "  ooooooo       ",
+    "   ooooooo      ",
+    "     ooooo      ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "   ooooooooo    ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    " oooooo oooooo  ",
+    " oooooo oooooo  ",
+    " oooooo oooooo  ",
+    " ooooo   ooooo  ",
+    " ooooo   ooooo  ",
+    "  oooo   oooo   ",
+    "  ooo     ooo   ",
+    "   oo     oo    ",
+    "                ",
+    "                ",
+    "                ",
+    //
+    "                ",
+    "     ooooo      ",
+    "   ooooooooo    ",
+    "  ooooooooooo   ",
+    "  ooooooooooo   ",
+    " oooooo oooooo  ",
+    " ooooo   ooooo  ",
+    " oooo     oooo  ",
+    " ooo       ooo  ",
+    " oo         oo  ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",])
+}
+
+
+fn writeDigits640b (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('x',11)]);
+  vid.initializeMemory(&[
     "  xxxx          ",
     " xx  xx         ",
     " xx xxx         ",
@@ -753,8 +358,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(51, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "   xx           ",
     "   xx           ",
     "  xxx           ",
@@ -770,8 +375,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(52, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "  xxxx          ",
     " xx  xx         ",
     "     xx         ",
@@ -787,8 +392,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(53, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "  xxxx          ",
     " xx  xx         ",
     "     xx         ",
@@ -804,8 +409,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(54, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "     xx         ",
     "    xxx         ",
     "   xxxx         ",
@@ -821,8 +426,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(55, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     " xxxxxx         ",
     " xx             ",
     " xxxxx          ",
@@ -838,8 +443,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(56, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "  xxxx          ",
     " xx  xx         ",
     " xx             ",
@@ -855,8 +460,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(57, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     " xxxxxx         ",
     " xx  xx         ",
     "    xx          ",
@@ -872,8 +477,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(58, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "  xxxx          ",
     " xx  xx         ",
     " xx  xx         ",
@@ -889,8 +494,8 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
-  vid.initializeSpriteData(59, &[(' ',0), ('x',11)], &[
+    "                ",
+    //
     "  xxxx          ",
     " xx  xx         ",
     " xx  xx         ",
@@ -906,11 +511,14 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "                ",
     "                ",
     "                ",
-    "                ",]);
+    "                ",])
+}
 
-  // tiles
 
-  vid.initializeTileData(0, &[(' ',0)], &[
+fn writeTiles (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('@',4), ('*',7), ('#',11), ('-',13)]);
+  let offset = vid.initializeMemory(&[
+    "        ", // 0
     "        ",
     "        ",
     "        ",
@@ -918,272 +526,242 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "        ",
     "        ",
     "        ",
-    "        "]);
-  vid.initializeTileData(1, &[(' ',0), ('#',7)], &[
+
+    "        ", // 1
+    "        ",
+    "        ",
+    "   **   ",
+    "   **   ",
     "        ",
     "        ",
     "        ",
-    "   ##   ",
-    "   ##   ",
-    "        ",
-    "        ",
-    "        "]);
-  vid.initializeTileData(2, &[(' ',0), ('#',11)], &[
+
+    "  ####  ", // 2
+    " ###### ",
+    "########",
+    "########",
+    "########",
+    "########",
+    " ###### ",
     "  ####  ",
-    " ###### ",
-    "########",
-    "########",
-    "########",
-    "########",
-    " ###### ",
-    "  ####  "]);
 
-  vid.initializeTileData(3, &[(' ',0), ('@',4)], &[
-    "    @@@@",
+    "    @@@@", // 3
     "  @@    ",
     " @      ",
     " @   @@@",
     "@   @   ",
     "@  @    ",
     "@  @    ",
-    "@  @    ",]);
-  vid.initializeTileData(4, &[(' ',0), ('@',4)], &[
-    "@@@@    ",
+    "@  @    ",
+
+    "@@@@    ", // 4
     "    @@  ",
     "      @ ",
     "@@@   @ ",
     "   @   @",
     "    @  @",
     "    @  @",
-    "    @  @",]);
-  vid.initializeTileData(5, &[(' ',0), ('@',4)], &[
-    "@  @    ",
+    "    @  @",
+
+    "@  @    ", // 5
     "@  @    ",
     "@  @    ",
     "@   @   ",
     " @   @@@",
     " @      ",
     "  @@    ",
-    "    @@@@",]);
-  vid.initializeTileData(6, &[(' ',0), ('@',4)], &[
-    "    @  @",
+    "    @@@@",
+
+    "    @  @", // 6
     "    @  @",
     "    @  @",
     "   @   @",
     "@@@   @ ",
     "      @ ",
     "    @@  ",
-    "@@@@    ",]);
+    "@@@@    ",
 
-  vid.initializeTileData(7, &[(' ',0), ('@',4)], &[
-    "@@@@@@@@",
+    "@@@@@@@@", // 7
     "        ",
     "        ",
     "     @@@",
     "    @   ",
     "   @    ",
     "   @    ",
-    "   @    "]);
-  vid.initializeTileData(8, &[(' ',0), ('@',4)], &[
-    "@@@@@@@@",
+    "   @    ",
+
+    "@@@@@@@@", // 8
     "        ",
     "        ",
     "@@@     ",
     "   @    ",
     "    @   ",
     "    @   ",
-    "    @   "]);
-  vid.initializeTileData(9, &[(' ',0), ('@',4)], &[
-    "   @    ",
+    "    @   ",
+
+    "   @    ", //9
     "   @    ",
     "   @    ",
     "    @   ",
     "     @@@",
     "        ",
     "        ",
-    "@@@@@@@@",]);
-  vid.initializeTileData(10, &[(' ',0), ('@',4)], &[
-    "    @   ",
+    "@@@@@@@@",
+
+    "    @   ", // 10
     "    @   ",
     "    @   ",
     "   @    ",
     "@@@     ",
     "        ",
     "        ",
-    "@@@@@@@@",]);
+    "@@@@@@@@",
 
-  vid.initializeTileData(11, &[(' ',0), ('@',4)], &[
-    "@       ",
+    "@       ", // 11
     "@       ",
     "@       ",
     "@    @@@",
     "@   @   ",
     "@  @    ",
     "@  @    ",
-    "@  @    "]);
-  vid.initializeTileData(12, &[(' ',0), ('@',4)], &[
-    "       @",
+    "@  @    ",
+
+    "       @", // 12
     "       @",
     "       @",
     "@@@    @",
     "   @   @",
     "    @  @",
     "    @  @",
-    "    @  @"]);
-  vid.initializeTileData(13, &[(' ',0), ('@',4)], &[
-    "@  @    ",
+    "    @  @",
+
+    "@  @    ", // 13
     "@  @    ",
     "@  @    ",
     "@   @   ",
     "@    @@@",
     "@       ",
     "@       ",
-    "@       ",]);
-  vid.initializeTileData(14, &[(' ',0), ('@',4)], &[
-    "    @  @",
+    "@       ",
+
+    "    @  @", // 14
     "    @  @",
     "    @  @",
     "   @   @",
     "@@@    @",
     "       @",
     "       @",
-    "       @",]);
-  vid.initializeTileData(15, &[(' ',0), ('@',4)], &[
-    "@@@@@@@@",
+    "       @",
+
+    "@@@@@@@@", // 15
     "        ",
     "        ",
     "@@@@@@@@",
     "        ",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(16, &[(' ',0), ('@',4)], &[
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",
-    "@  @    ",]);
-  vid.initializeTileData(17, &[(' ',0), ('@',4)], &[
-    "    @  @",
-    "    @  @",
-    "    @  @",
-    "    @  @",
-    "    @  @",
-    "    @  @",
-    "    @  @",
-    "    @  @",]);
-  vid.initializeTileData(18, &[(' ',0), ('@',4)], &[
     "        ",
+
+    "@  @    ", // 16
+    "@  @    ",
+    "@  @    ",
+    "@  @    ",
+    "@  @    ",
+    "@  @    ",
+    "@  @    ",
+    "@  @    ",
+
+    "    @  @", // 17
+    "    @  @",
+    "    @  @",
+    "    @  @",
+    "    @  @",
+    "    @  @",
+    "    @  @",
+    "    @  @",
+
+    "        ", // 18
     "        ",
     "        ",
     "        ",
     "@@@@@@@@",
     "        ",
     "        ",
-    "@@@@@@@@",]);
-  vid.initializeTileData(19, &[(' ',0), ('@',4)], &[
-    "        ",
+    "@@@@@@@@",
+
+    "        ", // 19
     "        ",
     "        ",
     "        ",
     "      @@",
     "     @  ",
     "    @   ",
-    "    @   "]);
-  vid.initializeTileData(20, &[(' ',0), ('@',4)], &[
-    "        ",
+    "    @   ",
+
+    "        ", // 20
     "        ",
     "        ",
     "        ",
     "@@      ",
     "  @     ",
     "   @    ",
-    "   @    "]);
-  vid.initializeTileData(21, &[(' ',0), ('@',4)], &[
-    "    @   ",
+    "   @    ",
+
+    "    @   ", // 21
     "    @   ",
     "     @  ",
     "      @@",
     "        ",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(22, &[(' ',0), ('@',4)], &[
-    "   @    ",
+    "        ",
+
+    "   @    ", // 22
     "   @    ",
     "  @     ",
     "@@      ",
     "        ",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(23, &[(' ',0), ('@',4)], &[
     "        ",
+
+    "        ", // 23
     "        ",
     "        ",
     "     @@@",
     "    @   ",
     "   @    ",
     "   @    ",
-    "   @    "]);
-  vid.initializeTileData(24, &[(' ',0), ('@',4)], &[
-    "        ",
+    "   @    ",
+
+    "        ", // 24
     "        ",
     "        ",
     "@@@     ",
     "   @    ",
     "    @   ",
     "    @   ",
-    "    @   "]);
-  vid.initializeTileData(25, &[(' ',0), ('@',4)], &[
-    "   @    ",
+    "    @   ",
+
+    "   @    ", // 25
     "   @    ",
     "   @    ",
     "    @   ",
     "     @@@",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(26, &[(' ',0), ('@',4)], &[
-    "    @   ",
+    "        ",
+
+    "    @   ", // 26
     "    @   ",
     "    @   ",
     "   @    ",
     "@@@     ",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(27, &[(' ',0), ('@',4)], &[
     "        ",
-    "        ",
-    "        ",
-    "        ",
-    "@@@@@@@@",
-    "        ",
-    "        ",
-    "        "]);
-  vid.initializeTileData(28, &[(' ',0), ('@',4)], &[
-    "    @   ",
-    "    @   ",
-    "    @   ",
-    "    @   ",
-    "    @   ",
-    "    @   ",
-    "    @   ",
-    "    @   "]);
-  vid.initializeTileData(29, &[(' ',0), ('@',4)], &[
-    "   @    ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-    "   @    "]);
-  vid.initializeTileData(30, &[(' ',0), ('@',4)], &[
+
+    "        ", // 27
     "        ",
     "        ",
     "        ",
@@ -1191,36 +769,62 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "        ",
     "        ",
     "        ",
-    "        "]);
-  vid.initializeTileData(31, &[(' ',0), ('@',4)], &[
+
+    "    @   ", // 28
+    "    @   ",
+    "    @   ",
+    "    @   ",
+    "    @   ",
+    "    @   ",
+    "    @   ",
+    "    @   ",
+
+    "   @    ", // 29
+    "   @    ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+
+    "        ", // 30
     "        ",
+    "        ",
+    "@@@@@@@@",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+
+    "        ", // 31
     "        ",
     "        ",
     "        ",
     "    @@@@",
     "    @   ",
     "    @   ",
-    "    @  @"]);
-  vid.initializeTileData(32, &[(' ',0), ('@',4)], &[
-    "        ",
+    "    @  @",
+
+    "        ", // 32
     "        ",
     "        ",
     "        ",
     "@@@@    ",
     "   @    ",
     "   @    ",
-    "@  @    "]);
-  vid.initializeTileData(33, &[(' ',0), ('@',4)], &[
-    "    @  @",
+    "@  @    ",
+
+    "    @  @", // 33
     "    @   ",
     "    @   ",
     "    @@@@",
     "        ",
     "        ",
     "        ",
-    "        ",]);
-  vid.initializeTileData(34, &[(' ',0), ('@',4)], &[
-    "@  @    ",
+    "        ",
+
+    "@  @    ", // 34
     "   @    ",
     "   @    ",
     "@@@@    ",
@@ -1228,8 +832,9 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "        ",
     "        ",
     "        ",]);
-  vid.initializeTileData(35, &[(' ',0), ('-',5)], &[
-    "        ",
+
+  vid.initializeMemory(&[
+    "        ", // 35
     "        ",
     "        ",
     "        ",
@@ -1237,8 +842,34 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "--------",
     "--------",
     "        ",]);
+  offset
+}
 
-  vid.initializeFieldData(&[(' ',0), ('.',1), ('*',2),
+
+pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 8] {
+
+  let mut offsets: [usize; 8] = [0; 8];
+
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',9),  ('.',15)]);
+  offsets[0] = writeGhost2048b(vid);
+
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',13), ('.',15)]);
+  offsets[1] = writeGhost2048b(vid);
+
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',14), ('.',15)]);
+  offsets[2] = writeGhost2048b(vid);
+
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',3),  ('.',15)]);
+  offsets[3] = writeGhost2048b(vid);
+
+  offsets[4] = writeScaredGhost512b(vid);
+  offsets[5] = writePukman2304b(vid);
+  offsets[6] = writeDigits640b(vid);
+  offsets[7] = writeTiles(vid);
+
+  vid.initializeFieldData(&[
+    // nothing pill power-pill
+    (' ',0), ('.',1), ('*',2),
     // double corners
     ('A',3), ('B',4), ('C',5), ('D',6),
     ('E',7), ('F',8), ('G',9), ('H',10),
@@ -1254,7 +885,7 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     // hard corner
     ('m',31),('n',32),('o',33),('p',34),
     // door
-    ('q',35)], &[
+    ('q',35)], &[ // 28x36 = 1008
     "           N jk O           ",
     "           N jk O           ",
     "           N jk O           ",
@@ -1291,4 +922,5 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) {
     "CPPPPPPPPPPb ab aPPPPPPPPPPD",
     "           N jk O           ",
     "           N jk O           ",]);
+    offsets
 }

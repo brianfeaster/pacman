@@ -44,3 +44,10 @@ impl Term {
     }
   }
 }
+
+////////////////////////////////////////
+
+#[macro_export]
+macro_rules! IF {
+    ($p:expr, $t:expr, $f:expr) => (if $p { $t } else { $f })
+}
