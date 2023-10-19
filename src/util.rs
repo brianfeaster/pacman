@@ -1,6 +1,6 @@
 use std::{
   env,
-  io::{Write, stdout, stdin}, thread, time::Duration,
+  io::{Write, stdout}, thread, time::Duration,
 };
 
 ////////////////////////////////////////
@@ -12,7 +12,8 @@ pub fn sleep (ms: u64)  {
 
 ////////////////////////////////////////
 
-pub fn readline() { stdin().read_line(&mut String::new()).ok(); }
+//use std::io::stdin;
+//pub fn readline() { stdin().read_line(&mut String::new()).ok(); }
 
 ////////////////////////////////////////
 

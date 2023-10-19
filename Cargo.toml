@@ -7,6 +7,6 @@ edition = "2021"
 [profile.dev]
 opt-level = 3
 overflow-checks = false
-lto = false
+#lto = true
 
 [dependencies]

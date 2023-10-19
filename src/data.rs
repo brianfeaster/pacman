@@ -181,6 +181,78 @@ fn writeScaredGhost512b (vid: &mut Graphics) -> usize {
     "                ",])
 } // writeScaredGhost512b
 
+fn writeGhostEyes1024b (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('.',7)]);
+  vid.initializeMemory(&[
+    // up
+    "                ",
+    "                ",
+    "    ##    ##    ",
+    "   .##.  .##.   ",
+    "   ....  ....   ",
+    "   ....  ....   ",
+    "    ..    ..    ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    // left
+    "                ",
+    "                ",
+    "                ",
+    "    ..    ..    ",
+    "   ....  ....   ",
+    "   ##..  ##..   ",
+    "   ##..  ##..   ",
+    "    ..    ..    ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    // right
+    "                ",
+    "                ",
+    "                ",
+    "    ..    ..    ",
+    "   ....  ....   ",
+    "   ..##  ..##   ",
+    "   ..##  ..##   ",
+    "    ..    ..    ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    // down
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "    ..    ..    ",
+    "   ....  ....   ",
+    "   ....  ....   ",
+    "   .##.  .##.   ",
+    "    ##    ##    ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                ",
+    "                "])
+}
 
 fn writePukman2304b (vid: &mut Graphics) -> usize {
   vid.memorySetCharColorMap(&[(' ',0), ('o',11)]);
@@ -846,9 +918,9 @@ fn writeTiles (vid: &mut Graphics) -> usize {
 }
 
 
-pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 8] {
+pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 9] {
 
-  let mut offsets: [usize; 8] = [0; 8];
+  let mut offsets: [usize; 9] = [0; 9];
 
   vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',9),  ('.',15)]);
   offsets[0] = writeGhost2048b(vid);
@@ -863,9 +935,10 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 8] {
   offsets[3] = writeGhost2048b(vid);
 
   offsets[4] = writeScaredGhost512b(vid);
-  offsets[5] = writePukman2304b(vid);
-  offsets[6] = writeDigits640b(vid);
-  offsets[7] = writeTiles(vid);
+  offsets[5] = writeGhostEyes1024b(vid);
+  offsets[6] = writePukman2304b(vid);
+  offsets[7] = writeDigits640b(vid);
+  offsets[8] = writeTiles(vid);
 
   vid.initializeFieldData(&[
     // nothing pill power-pill
