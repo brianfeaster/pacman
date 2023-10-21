@@ -117,6 +117,7 @@ impl Default for Sprite {
 
 pub struct Graphics {
     term: Term,
+    pub viewportSize: Loc,
     memory: [u8; MEMORYSIZE],
     memPtr: usize,
     c2b:    HashMap<char, u8>,
@@ -134,6 +135,7 @@ pub struct Graphics {
 impl Graphics {
   pub fn new(term: Term) -> Graphics {
     Graphics{
+      viewportSize: Loc{x:min(term.w, RASTERWIDTH), y:min(term.h, RASTERHEIGHT)},
       term,
       memory:  [0; MEMORYSIZE],
       memPtr:  0,
@@ -264,19 +266,29 @@ impl Graphics {
     } // for s
 
   }
-  pub fn printField(&mut self, locCenter: &Mloc) {
-    let w = min(self.term.w, RASTERWIDTH);
-    let h = min(self.term.h, RASTERHEIGHT);
-    let mut lastColor=0;
-    self.buff.clear();
-    write!(self.buff, "\x1b[H\x1b[30m").ok();
-    let mut loc=(0,0);
+
+  pub fn alignViewport(&mut self, locCenter: &Mloc) {
+    let w = self.viewportSize.x;
+    let h = self.viewportSize.y;
+
     self.topleft = Loc{
       x: min(max(0, (locCenter.x()+SPRITEWIDTH/2-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize,
       y: min(max(0, (locCenter.y()+SPRITEHEIGHT/2-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize,
-    };
+    }
+  }
+
+  pub fn printField(&mut self) {
+    let w = self.viewportSize.x;
+    let h = self.viewportSize.y;
+
+    self.buff.clear();
+    write!(self.buff, "\x1b[H\x1b[30m").ok();
+
     let mut idx = 0;
-    let mut ridx = self.topleft.y*RASTERWIDTH + self.topleft.x;
+    let mut ridx =  self.topleft.x + self.topleft.y*RASTERWIDTH;
+    let mut lastColor=0;
+    let mut loc=(0,0);
+
     for y in 0..h {
       for x in 0..w {
         let b = self.raster[ridx];
@@ -308,12 +320,12 @@ impl Graphics {
     }
     <Stdout as io::Write>::write_all(&mut stdout(), self.buff.as_bytes()).ok();
 
-    if !self.msg.is_empty() { // Maybe overlay debug msg
-      // self.msg = format!("{:?}", locCenter);
-      print!("\x1b[H\x1b[37m\x1b[K{}", self.msg);
-      //self.msg.clear();
-      print!("\x1b[{};{}H\x1b[37m🚽", h/2, w/2);
-    }
+    //if self.msg.is_empty() { // Maybe overlay debug msg
+    //  //self.msg = format!("{:?}", locCenter);
+    //  print!("\x1b[H\x1b[37m{}", self.msg);
+    //  print!("\x1b[{};{}H\x1b[37m🚽", h/2, w/2);
+    //  //self.msg.clear();
+    //}
   }
 } // impl Graphics
 

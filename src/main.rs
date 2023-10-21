@@ -20,7 +20,10 @@ use gfx::*;
 ////////////////////////////////////////
 
 fn square_diff (a: isize, b: usize) -> usize { let t = a - b as isize; (t*t) as usize }
-fn dist (x: isize, y: isize, mloc: &Mloc) -> usize { square_diff(x, mloc.x) + square_diff(y, mloc.y) }
+fn dist (x: isize, y: isize, mloc: &Mloc) -> usize {
+  //eprintln!("{} {} {:?}", x, y, mloc);
+  square_diff(x, mloc.x) + square_diff(y, mloc.y)
+}
 fn opposite (dir: usize) -> usize { [2, 3, 0, 1, 4][dir] }
 
 fn randir (vid: &mut Graphics, loc: &Mloc, dir: usize, bias: usize) -> usize {
@@ -97,6 +100,7 @@ struct Ghost {
     dir: usize,      // direction of next location
     mlocFgoal: Mloc,
     state: usize, // 0 normal, _ ghost, MAX eyes
+    score: usize
 }
 
 impl Ghost {
@@ -104,7 +108,8 @@ impl Ghost {
     Ghost{
       vid, tick:0, sprite, data, dataScared, dataEyes,
       mlocField:Mloc::new(SPRITEFIELDWIDTH, SPRITEFIELDHEIGHT, x,y),
-      dir, mlocFgoal:Mloc::new(SPRITEFIELDWIDTH, SPRITEFIELDHEIGHT, 0,0), state:0
+      dir, mlocFgoal:Mloc::new(SPRITEFIELDWIDTH, SPRITEFIELDHEIGHT, 0,0),
+      state:0, score:0
     }
   }
   fn setLocFgoal (&mut self, ml: &Mloc) { self.mlocFgoal.x=ml.x(); self.mlocFgoal.y=ml.y() }
@@ -133,7 +138,7 @@ impl Entity for Ghost {
     // Get eaten or regenerate
     if self.mlocField.equal(&self.mlocFgoal) {
       if usize::MAX == self.state { self.state = 0 } // regenerate to ghost
-      if 0 < self.state { self.state = usize::MAX }  // eaten to scared
+      if 0 < self.state { self.score += 10000; self.state = usize::MAX }  // eaten to scared
     }
 
     vid.setSpriteLoc(
@@ -175,7 +180,8 @@ pub struct Pukman {
     mlocField: Mloc,
     mlocRaster: Mloc,
     bias: usize,
-    hungry: bool
+    hungry: bool,
+    score: usize
 }
 
 impl Pukman {
@@ -184,7 +190,7 @@ impl Pukman {
       vid, tick:0, sprite, data, dir,
       mlocField:Mloc::new(SPRITEFIELDWIDTH, SPRITEFIELDHEIGHT, fx, fy),
       mlocRaster: Mloc::new(SPRITERASTERWIDTH, SPRITERASTERHEIGHT, 0, 0),
-      bias:4, hungry:false}
+      bias:4, hungry:false, score:0 }
   }
 
   fn go (&mut self, go: usize) {
@@ -216,7 +222,11 @@ impl Entity for Pukman {
     // Maybe eat pill and become ghost-hungry if powerpill
     let x = self.mlocField.x();
     let y = self.mlocField.y();
-    self.hungry = 0==step && x<FIELDWIDTH && y<FIELDHEIGHT && 2==vid.setFieldTile(x, y, 0);
+    self.hungry = 0==step && x<FIELDWIDTH && y<FIELDHEIGHT && {
+       let dot = vid.setFieldTile(x, y, 0);
+       self.score += match dot { 1=>1, 2=>1000, _=>0 };
+       2 == dot
+    };
 
     // tile-to-raster coordinates, center sprite on cell, parametric increment
     self.mlocRaster.x = TILEWIDTH*x  + step*DMX_SPRITERASTER[self.dir] + SPRITECENTERX;
@@ -270,7 +280,7 @@ impl ArcadeGame {
     let dataTiles = offsets[9];
 
     // Enable all sprites
-    (0..11).for_each(|i| vid.sprites[i].en = true);
+    (0..15).for_each(|i| vid.sprites[i].en = true);
 
     // Contain Graphics obj
     let vid : Rc<RefCell<Graphics>> = Rc::new(RefCell::new(vid));
@@ -283,7 +293,7 @@ impl ArcadeGame {
       Ghost::new(vid.clone(), 4, offsets[3], offsets[4], offsets[5], 18, 14, 1),  //clyde
     ];
     // Pukman
-    let pukman = Pukman::new(vid.clone(), 0, offsets[6], 14, 20, 2);  // 13.5 26
+    let pukman = Pukman::new(vid.clone(), 0, offsets[6], 13, 20, 2);  // 13.5 26
 
     ArcadeGame{vid, keyboard, pukman, ghosts, digitsMem, dataTiles, db, esc:0}
   } // fn new
@@ -299,28 +309,40 @@ impl ArcadeGame {
     fifo_out
   }
 
-  fn setFps (&mut self, val: usize) {
-      let vid = &mut self.vid.borrow_mut();
+  fn setFps (&self, vid: &mut Graphics, val: usize, score: usize) {
       let Loc{x:left, y:top} = vid.topleft;
-      vid.sprites[5].mloc.x = left+32;
-      vid.sprites[5].mloc.y = top+1;
-      vid.sprites[5].data=self.digitsMem+SPRITEVOLUME*(val%10);
+      let w = vid.viewportSize.x;
+      
+      vid.setSpriteLoc(5,left+25, top);
+      vid.sprites[5].data = self.digitsMem+SPRITEVOLUME*(10+val%10);
 
-      vid.sprites[6].mloc.x = left+24;
-      vid.sprites[6].mloc.y = top+1;
-      vid.sprites[6].data=self.digitsMem+SPRITEVOLUME*(val/10%10);
+      vid.setSpriteLoc(6,left+20, top);
+      vid.sprites[6].data = self.digitsMem+SPRITEVOLUME*(10+val/10%10);
 
-      vid.sprites[7].mloc.x = left+16;
-      vid.sprites[7].mloc.y = top+1;
-      vid.sprites[7].data=self.digitsMem+SPRITEVOLUME*(val/100%10);
+      vid.setSpriteLoc(7,left+15, top);
+      vid.sprites[7].data = self.digitsMem+SPRITEVOLUME*(10+val/100%10);
 
-      vid.sprites[8].mloc.x = left+8;
-      vid.sprites[8].mloc.y = top+1;
-      vid.sprites[8].data=self.digitsMem+SPRITEVOLUME*(val/1000%10);
+      vid.setSpriteLoc(8,left+10, top);
+      vid.sprites[8].data = self.digitsMem+SPRITEVOLUME*(10+val/1000%10);
 
-      vid.sprites[9].mloc.x = left;
-      vid.sprites[9].mloc.y = top+1;
-      vid.sprites[9].data=self.digitsMem+SPRITEVOLUME*(val/10000%10);
+      vid.setSpriteLoc(9,left+5, top);
+      vid.sprites[9].data = self.digitsMem+SPRITEVOLUME*(10+val/10000%10);
+
+
+      vid.setSpriteLoc(10,left+w-10, top);
+      vid.sprites[10].data = self.digitsMem+SPRITEVOLUME*(10+score/1%10);
+
+      vid.setSpriteLoc(11,left+w-15, top);
+      vid.sprites[11].data = self.digitsMem+SPRITEVOLUME*(10+score/10%10);
+
+      vid.setSpriteLoc(12,left+w-20, top);
+      vid.sprites[12].data = self.digitsMem+SPRITEVOLUME*(10+score/100%10);
+
+      vid.setSpriteLoc(13,left+w-25, top);
+      vid.sprites[13].data = self.digitsMem+SPRITEVOLUME*(10+score/1000%10);
+
+      vid.setSpriteLoc(14,left+w-30, top);
+      vid.sprites[14].data = self.digitsMem+SPRITEVOLUME*(10+score/10000%10);
   }
 
   fn checkKeyboard (&mut self) -> bool {
@@ -349,21 +371,24 @@ impl ArcadeGame {
     print!("\x1bc\x1b[?25l\x1b[0;37;40m");
     while self.checkKeyboard() {
 
+      self.pukman.tick();
       self.ghosts.iter_mut().for_each(|g| {
         if self.pukman.hungry { g.scared() }
         g.setLocFgoal(&self.pukman.mlocField);
+        //eprintln!("{} {} {:?} pukman", self.pukman.mlocField.x(), self.pukman.mlocField.y(), self.pukman.mlocField);
+        //eprintln!("{} {} {:?} ghost", g.mlocFgoal.x(), g.mlocFgoal.y(), g.mlocFgoal);
         g.tick()
       });
-      self.pukman.tick();
-      self.setFps(fps);
 
       let vid = &mut self.vid.borrow_mut();
 
       // Drinkybird
       vid.sprites[10].data = self.db + self.pukman.tick/8%2*256;
+      vid.alignViewport(&self.pukman.mlocRaster);
+      self.setFps(vid, fps, self.pukman.score + self.ghosts.iter().map(|g|g.score).sum::<usize>());
       vid.rasterizeTilesSprites(self.dataTiles);
       //vid.msg = format!("{:?}", self.pukman.mlocRaster);
-      vid.printField(&self.pukman.mlocRaster);
+      vid.printField();
 
       // Next average frame time not include sleep time
       fps = 1000000 / avg.add(mark.elapsed().unwrap_or_default().as_micros() as usize);
