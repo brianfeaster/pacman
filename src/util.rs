@@ -17,6 +17,8 @@ pub fn sleep (ms: u64)  {
 
 ////////////////////////////////////////
 
+pub const fn neg_mod (n: usize, b: usize) -> usize { b - n }
+
 pub struct Rnd (u16);
 
 impl Rnd {
@@ -29,6 +31,25 @@ impl Rnd {
   }
 }
 
+////////////////////////////////////////
+pub struct Average {
+  max: usize,
+  count: usize,
+  nums: Vec<usize>,
+  idx: usize,
+  sum: usize
+}
+
+impl Average {
+  pub fn new (max: usize) -> Average { Average{max, count:0, nums:vec![0; max], idx:0, sum:0} }
+  pub fn add (&mut self, num: usize) -> usize {
+    self.sum += num - self.nums[self.idx];
+    self.nums[self.idx] = num;
+    self.idx = (self.idx + 1) % self.max;
+    if self.count < self.max { self.count += 1 }
+    self.sum / self.count
+  }
+}
 ////////////////////////////////////////
 
 pub struct Term {

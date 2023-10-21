@@ -5,7 +5,7 @@ use std::{
   io::{self, stdout, Stdout},
 };
 
-use crate::util::{Rnd, Term};
+use crate::util::{Rnd, Term, neg_mod};
 
 ////////////////////////////////////////
 
@@ -16,6 +16,7 @@ pub const BLK  :char = '▉'; // left 7/8th block 2589
 //pub const BLK :char = '◼'; // black medium square 25fc
 //pub const BLK :char = '▮'; // black verticle rectangle 25ae
 //pub const BLK :char = '▪'; // black small square 25aa
+//pub const BLK :char = '🚽'; // black small square 25aa
 
 ////////////////////////////////////////
 
@@ -35,29 +36,83 @@ pub const SPRITEHEIGHT: usize= 16;
 pub const SPRITEVOLUME: usize= SPRITEWIDTH*SPRITEHEIGHT;
 const SPRITECOUNT: usize = 16;
 
-// Includes non-visible right/bottom borders
-const RASTERWIDTH:  usize = TILEWIDTH * FIELDWIDTH;
-const RASTERHEIGHT: usize = TILEHEIGHT * FIELDHEIGHT;
+// Amount to center sprite over its tile location
+pub const SPRITECENTERX: usize = neg_mod((SPRITEWIDTH-TILEWIDTH)/2, SPRITERASTERWIDTH);
+pub const SPRITECENTERY: usize = neg_mod((SPRITEHEIGHT-TILEHEIGHT)/2, SPRITERASTERHEIGHT);
 
 pub const SPRITEFIELDWIDTH: usize  = FIELDWIDTH + SPRITEWIDTH/TILEWIDTH;
 pub const SPRITEFIELDHEIGHT: usize = FIELDHEIGHT + SPRITEHEIGHT/TILEHEIGHT;
 
-pub const SPRITERASTERWIDTH: usize  = SPRITEFIELDWIDTH * TILEWIDTH;
-pub const SPRITERASTERHEIGHT: usize = SPRITEFIELDHEIGHT * TILEHEIGHT;
+const RASTERWIDTH:  usize = TILEWIDTH * FIELDWIDTH;
+const RASTERHEIGHT: usize = TILEHEIGHT * FIELDHEIGHT;
+
+// Includes non-visible right/bottom borders
+pub const SPRITERASTERWIDTH: usize  = RASTERWIDTH + SPRITEWIDTH;
+pub const SPRITERASTERHEIGHT: usize = RASTERHEIGHT + SPRITEHEIGHT;
 
 ////////////////////////////////////////
 
-#[derive(Clone,Copy,Default,PartialEq,Debug)]
+#[derive(Debug, Clone,Copy)]
+pub struct Mloc {
+  w: usize,
+  h: usize,
+  pub x: usize,
+  pub y: usize,
+}
+
+impl Mloc {
+  pub const UP: usize = 0;
+  pub fn equal (&self, o: &Mloc) -> bool {
+    self.x() == o.x() && self.y() == o.y()
+  }
+  pub fn new (w: usize, h: usize, x: usize, y: usize) -> Mloc { Mloc{w, h, x:(w<<32)+x, y:(h<<32)+y} }
+  pub fn area (&self) -> usize { self.w * self.h }
+  pub fn shift (&mut self, dir: usize) -> &mut Mloc {
+    match dir {
+      0 => self.x += 1,
+      1 => self.y += 1,
+      2 => self.x -= 1,
+      3 => self.y -= 1,
+      _ => ()
+    }
+    self
+  }
+  pub fn next (&self, dir: usize) -> Mloc {
+    match dir {
+      0 => Mloc{w:self.w, h:self.h, x:self.x+1, y:self.y},
+      1 => Mloc{w:self.w, h:self.h, x:self.x,   y:self.y+1},
+      2 => Mloc{w:self.w, h:self.h, x:self.x-1, y:self.y},
+      3 => Mloc{w:self.w, h:self.h, x:self.x,   y:self.y-1},
+      _ => *self
+    }
+  }
+  pub fn x (&self) -> usize { self.x % self.w }
+  pub fn y (&self) -> usize { self.y % self.h }
+}
+
+////////////////////////////////////////
+
+#[derive(Clone,Copy,Default,PartialEq, Debug)]
 pub struct Loc {
   pub x: usize,
   pub y: usize,
 }
 
-#[derive(Clone,Copy,Default)]
+impl Loc {
+  fn new (x: usize, y: usize) -> Loc { Loc{x, y} }
+}
+
+#[derive(Clone,Copy)]
 pub struct Sprite {
     pub data: usize,
-    pub loc: Loc,
+    pub mloc: Mloc,
     pub en: bool,
+}
+
+impl Default for Sprite {
+  fn default () -> Sprite {
+    Sprite{data:0, mloc:Mloc{w:SPRITERASTERWIDTH, h:SPRITERASTERHEIGHT, x:0, y:0}, en:false}
+  }
 }
 
 pub struct Graphics {
@@ -72,7 +127,8 @@ pub struct Graphics {
     last:   [u8; TILEVOLUME*FIELDVOLUME],
     pub rnd: Rnd,
     pub msg: String,
-    pub topleft: Loc
+    pub topleft: Loc,
+    buff: String
 }
 
 impl Graphics {
@@ -89,7 +145,8 @@ impl Graphics {
       last:     [255;(TILEVOLUME*FIELDVOLUME)],
       rnd:     Rnd::new(),
       msg:     String::new(),
-      topleft: Loc::default()
+      topleft: Loc::default(),
+      buff: String::new()
     }
   }
 
@@ -131,21 +188,22 @@ impl Graphics {
   {
     let y = yf*FIELDWIDTH;
     [
-      (f(self.field[(xf+y+FIELDVOLUME-FIELDWIDTH) % FIELDVOLUME]),0, xf as isize,     yf as isize-1),
-      (f(self.field[(xf+FIELDWIDTH-1)%FIELDWIDTH + y]),           1, xf as isize - 1, yf as isize),
-      (f(self.field[(xf+1)%FIELDWIDTH + y]),                      2, xf as isize + 1, yf as isize),
-      (f(self.field[(xf+y+FIELDWIDTH) % FIELDVOLUME]),            3, xf as isize,     yf as isize+1),
+      (f(self.field[(xf+1)%FIELDWIDTH + y]),                      0, xf as isize + 1, yf as isize),
+      (f(self.field[(xf+y+FIELDWIDTH) % FIELDVOLUME]),            1, xf as isize,     yf as isize+1),
+      (f(self.field[(xf+FIELDWIDTH-1)%FIELDWIDTH + y]),           2, xf as isize - 1, yf as isize),
+      (f(self.field[(xf+y+FIELDVOLUME-FIELDWIDTH) % FIELDVOLUME]),3, xf as isize,     yf as isize-1),
     ]
   }
 
-  pub fn setFieldTile(&mut self, loc: Loc, tile: u8) -> u8{
-      let old = self.field[loc.y*FIELDWIDTH+loc.x];
-      self.field[loc.y*FIELDWIDTH+loc.x] = tile;
+  pub fn setFieldTile(&mut self, x: usize, y: usize, tile: u8) -> u8{
+      let old = self.field[x+y*FIELDWIDTH];
+      self.field[x+y*FIELDWIDTH] = tile;
       old
   }
 
-  pub fn setSpriteLoc(&mut self, i: usize, loc: Loc) {
-    self.sprites[i].loc = loc;
+  pub fn setSpriteLoc(&mut self, i: usize, x: usize, y:usize) {
+    self.sprites[i].mloc.x = x;
+    self.sprites[i].mloc.y = y;
   }
   pub fn setSpriteIdx(&mut self, i: usize, p: usize) {
     self.sprites[i].data = p;
@@ -169,8 +227,8 @@ impl Graphics {
     for s in 0..SPRITECOUNT {
       if ! self.sprites[s].en { continue }
 
-      let slocy = self.sprites[s].loc.y;
-      let slocx = self.sprites[s].loc.x;
+      let slocy = self.sprites[s].mloc.y();
+      let slocx = self.sprites[s].mloc.x();
 
       // dirty tile bit
       let mut xsf = slocx/TILEWIDTH;
@@ -206,16 +264,16 @@ impl Graphics {
     } // for s
 
   }
-  pub fn printField(&mut self, locCenter: Loc) {
+  pub fn printField(&mut self, locCenter: &Mloc) {
     let w = min(self.term.w, RASTERWIDTH);
     let h = min(self.term.h, RASTERHEIGHT);
-    let mut buff = String::new();
     let mut lastColor=0;
-    write!(buff, "\x1b[H\x1b[30m").ok();
+    self.buff.clear();
+    write!(self.buff, "\x1b[H\x1b[30m").ok();
     let mut loc=(0,0);
     self.topleft = Loc{
-      x: min(max(0, ((locCenter.x+16)%SPRITERASTERWIDTH -8-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize,
-      y: min(max(0, ((locCenter.y+16)%SPRITERASTERHEIGHT-8-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize,
+      x: min(max(0, (locCenter.x()+SPRITEWIDTH/2-(w>>1))as isize), (RASTERWIDTH-w)  as isize) as usize,
+      y: min(max(0, (locCenter.y()+SPRITEHEIGHT/2-(h>>1))as isize), (RASTERHEIGHT-h) as isize) as usize,
     };
     let mut idx = 0;
     let mut ridx = self.topleft.y*RASTERWIDTH + self.topleft.x;
@@ -225,19 +283,19 @@ impl Graphics {
         let l = self.last[idx];
         if b!=l {
           // Update cursor
-          if loc != (x, y) { write!(buff, "\x1b[{};{}H", y+1,x+1).ok(); }
+          if loc != (x, y) { write!(self.buff, "\x1b[{};{}H", y+1,x+1).ok(); }
           if lastColor != b {
             if 0==b {
-              write!(buff, " ").ok();
+              write!(self.buff, " ").ok();
             } else {
-              write!(buff, "\x1b[38;5;{}m{BLK}", b).ok();
+              write!(self.buff, "\x1b[38;5;{}m{BLK}", b).ok();
               lastColor = b;
             }
           } else {
             if 0==b {
-              write!(buff, " ").ok();
+              write!(self.buff, " ").ok();
             } else {
-              write!(buff, "{BLK}").ok();
+              write!(self.buff, "{BLK}").ok();
             }
           }
           self.last[idx] = b;
@@ -248,11 +306,14 @@ impl Graphics {
       }
       ridx += RASTERWIDTH-w;
     }
-     self.msg = format!("{:?}", locCenter);
-    <Stdout as io::Write>::write_all(&mut stdout(), buff.as_bytes()).ok();
-    print!("\x1b[H\x1b[37m\x1b[K{}\x1b[H", self.msg);
-    //self.msg.clear();
-    //print!("\x1b[{};{}H\x1b[37m@", h/2, w/2);
+    <Stdout as io::Write>::write_all(&mut stdout(), self.buff.as_bytes()).ok();
+
+    if !self.msg.is_empty() { // Maybe overlay debug msg
+      // self.msg = format!("{:?}", locCenter);
+      print!("\x1b[H\x1b[37m\x1b[K{}", self.msg);
+      //self.msg.clear();
+      print!("\x1b[{};{}H\x1b[37m🚽", h/2, w/2);
+    }
   }
 } // impl Graphics
 
