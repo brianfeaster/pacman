@@ -758,7 +758,45 @@ fn writeDigits640b (vid: &mut Graphics) -> usize {
   ])
 }
 
-fn writeDrinkyBird (vid: &mut Graphics) -> usize {
+fn writeIgnignok (vid: &mut Graphics) -> usize {
+  vid.memorySetCharColorMap(&[(' ',0), ('g',2), ('b',4), ('.',4)]);
+  vid.initializeMemory(&[
+    "                ",
+    "    gg     ggg  ",
+    "    ggg    ggg  ",
+    "  ggggg gggggg  ",
+    "  ggg.gggg.ggg  ",
+    "  gg.gggggg.gg  ",
+    "  g.g..gg..g.g  ",
+    "   ggggggggggg  ",
+    "   ggggggggggg b",
+    "   ggggggggggg b",
+    " bggg......gggb ",
+    "bgggggggggggggg ",
+    "bgggggggggggggg ",
+    "     b    b     ",
+    "   bbb    bbb   ",
+    "                ",
+
+    "                ",
+    "    gg     ggg  ",
+    "    ggg    ggg  ",
+    "  ggggg gggggg  ",
+    "  ggg.gggg.ggg  ",
+    "  gg.gggggg.gg  ",
+    "  g.g..gg..g.g  ",
+    "   ggggggggggg  ",
+    "b  ggggggggggg  ",
+    "b  ggggggggggg  ",
+    " bggg......gggb ",
+    " ggggggggggggggb",
+    " ggggggggggggggb",
+    "     b    b     ",
+    "   bbb    bbb   ",
+    "                ",
+  ])
+}
+fn _writeDrinkyBird (vid: &mut Graphics) -> usize {
   vid.memorySetCharColorMap(&[(' ',0), ('g',2), ('b',4), ('r',1),('h',7),('w',15)]);
   vid.initializeMemory(&[
     "    b           ",
@@ -827,7 +865,16 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     " ###### ",
     "  ####  ",
 
-    "    @@@@", // 3
+    "        ", // 3
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+    "--------",
+    "--------",
+    "        ",
+
+    "    @@@@", // 4
     "  @@    ",
     " @      ",
     " @   @@@",
@@ -836,7 +883,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "@  @    ",
     "@  @    ",
 
-    "@@@@    ", // 4
+    "@@@@    ", // 5
     "    @@  ",
     "      @ ",
     "@@@   @ ",
@@ -845,7 +892,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @  @",
     "    @  @",
 
-    "@  @    ", // 5
+    "@  @    ", // 6
     "@  @    ",
     "@  @    ",
     "@   @   ",
@@ -854,7 +901,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "  @@    ",
     "    @@@@",
 
-    "    @  @", // 6
+    "    @  @", // 7
     "    @  @",
     "    @  @",
     "   @   @",
@@ -863,25 +910,25 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @@  ",
     "@@@@    ",
 
-    "@@@@@@@@", // 7
-    "        ",
-    "        ",
-    "     @@@",
-    "    @   ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-
     "@@@@@@@@", // 8
     "        ",
     "        ",
+    "     @@@",
+    "    @   ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+
+    "@@@@@@@@", // 9
+    "        ",
+    "        ",
     "@@@     ",
     "   @    ",
     "    @   ",
     "    @   ",
     "    @   ",
 
-    "   @    ", //9
+    "   @    ", // 10
     "   @    ",
     "   @    ",
     "    @   ",
@@ -890,7 +937,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "@@@@@@@@",
 
-    "    @   ", // 10
+    "    @   ", // 11
     "    @   ",
     "    @   ",
     "   @    ",
@@ -899,7 +946,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "@@@@@@@@",
 
-    "@       ", // 11
+    "@       ", // 12
     "@       ",
     "@       ",
     "@    @@@",
@@ -908,7 +955,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "@  @    ",
     "@  @    ",
 
-    "       @", // 12
+    "       @", // 13
     "       @",
     "       @",
     "@@@    @",
@@ -917,7 +964,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @  @",
     "    @  @",
 
-    "@  @    ", // 13
+    "@  @    ", // 14
     "@  @    ",
     "@  @    ",
     "@   @   ",
@@ -926,7 +973,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "@       ",
     "@       ",
 
-    "    @  @", // 14
+    "    @  @", // 15
     "    @  @",
     "    @  @",
     "   @   @",
@@ -935,7 +982,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "       @",
     "       @",
 
-    "@@@@@@@@", // 15
+    "@@@@@@@@", // 16
     "        ",
     "        ",
     "@@@@@@@@",
@@ -944,7 +991,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "@  @    ", // 16
+    "@  @    ", // 17
     "@  @    ",
     "@  @    ",
     "@  @    ",
@@ -953,7 +1000,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "@  @    ",
     "@  @    ",
 
-    "    @  @", // 17
+    "    @  @", // 18
     "    @  @",
     "    @  @",
     "    @  @",
@@ -961,35 +1008,35 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @  @",
     "    @  @",
     "    @  @",
-
-    "        ", // 18
-    "        ",
-    "        ",
-    "        ",
-    "@@@@@@@@",
-    "        ",
-    "        ",
-    "@@@@@@@@",
 
     "        ", // 19
     "        ",
     "        ",
     "        ",
-    "      @@",
-    "     @  ",
-    "    @   ",
-    "    @   ",
+    "@@@@@@@@",
+    "        ",
+    "        ",
+    "@@@@@@@@",
 
     "        ", // 20
     "        ",
     "        ",
     "        ",
+    "      @@",
+    "     @  ",
+    "    @   ",
+    "    @   ",
+
+    "        ", // 21
+    "        ",
+    "        ",
+    "        ",
     "@@      ",
     "  @     ",
     "   @    ",
     "   @    ",
 
-    "    @   ", // 21
+    "    @   ", // 22
     "    @   ",
     "     @  ",
     "      @@",
@@ -998,7 +1045,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "   @    ", // 22
+    "   @    ", // 23
     "   @    ",
     "  @     ",
     "@@      ",
@@ -1007,25 +1054,25 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "        ", // 23
-    "        ",
-    "        ",
-    "     @@@",
-    "    @   ",
-    "   @    ",
-    "   @    ",
-    "   @    ",
-
     "        ", // 24
     "        ",
     "        ",
+    "     @@@",
+    "    @   ",
+    "   @    ",
+    "   @    ",
+    "   @    ",
+
+    "        ", // 25
+    "        ",
+    "        ",
     "@@@     ",
     "   @    ",
     "    @   ",
     "    @   ",
     "    @   ",
 
-    "   @    ", // 25
+    "   @    ", // 26
     "   @    ",
     "   @    ",
     "    @   ",
@@ -1034,7 +1081,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "    @   ", // 26
+    "    @   ", // 27
     "    @   ",
     "    @   ",
     "   @    ",
@@ -1043,7 +1090,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "        ", // 27
+    "        ", // 28
     "        ",
     "        ",
     "        ",
@@ -1052,7 +1099,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "    @   ", // 28
+    "    @   ", // 29
     "    @   ",
     "    @   ",
     "    @   ",
@@ -1061,7 +1108,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @   ",
     "    @   ",
 
-    "   @    ", // 29
+    "   @    ", // 30
     "   @    ",
     "   @    ",
     "   @    ",
@@ -1069,17 +1116,17 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "   @    ",
     "   @    ",
     "   @    ",
-
-    "        ", // 30
-    "        ",
-    "        ",
-    "@@@@@@@@",
-    "        ",
-    "        ",
-    "        ",
-    "        ",
 
     "        ", // 31
+    "        ",
+    "        ",
+    "@@@@@@@@",
+    "        ",
+    "        ",
+    "        ",
+    "        ",
+
+    "        ", // 32
     "        ",
     "        ",
     "        ",
@@ -1088,7 +1135,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "    @   ",
     "    @  @",
 
-    "        ", // 32
+    "        ", // 33
     "        ",
     "        ",
     "        ",
@@ -1097,7 +1144,7 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "   @    ",
     "@  @    ",
 
-    "    @  @", // 33
+    "    @  @", // 34
     "    @   ",
     "    @   ",
     "    @@@@",
@@ -1106,24 +1153,15 @@ fn writeTiles (vid: &mut Graphics) -> usize {
     "        ",
     "        ",
 
-    "@  @    ", // 34
+    "@  @    ", // 35
     "   @    ",
     "   @    ",
     "@@@@    ",
     "        ",
     "        ",
     "        ",
-    "        ",]);
-
-  vid.initializeMemory(&[
-    "        ", // 35
     "        ",
-    "        ",
-    "        ",
-    "        ",
-    "--------",
-    "--------",
-    "        ",]);
+  ]);
   offset
 }
 
@@ -1147,33 +1185,34 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
   offsets[4] = writeScaredGhost512b(vid);
   offsets[5] = writeGhostEyes1024b(vid);
   offsets[6] = writePukman2304b(vid);
-  offsets[7] = writeDrinkyBird(vid);
+  //offsets[7] = writeDrinkyBird(vid);
+  offsets[7] = writeIgnignok(vid);
   offsets[8] = writeDigits640b(vid);
   offsets[9] = writeTiles(vid);
+
 
   vid.initializeFieldData(&[
     // nothing pill power-pill
     (' ',0), ('.',1), ('*',2),
 
     // double corners
-    ('A',3), ('B',4), ('C',5), ('D',6),
-    ('E',7), ('F',8), ('G',9), ('H',10),
-    ('I',11),('J',12),('K',13),('L',14),
+    ('A',4), ('B',5), ('C',6), ('D',7),
+    ('E',8), ('F',9), ('G',10), ('H',11),
+    ('I',12),('J',13),('K',14),('L',15),
     // double edges
-    ('M',15), ('N',16), ('O',17), ('P',18),
+    ('M',16), ('N',17), ('O',18), ('P',19),
 
     // corner
-    ('a',19), ('b',20), ('c',21), ('d',22),
+    ('a',20), ('b',21), ('c',22), ('d',23),
     // corner inside
-    ('e',23), ('f',24), ('g',25), ('h',26),
+    ('e',24), ('f',25), ('g',26), ('h',27),
     // edge
-    ('i',27),('j',28),('k',29),('l',30),
+    ('i',28),('j',29),('k',30),('l',31),
     // double hard corner
-    ('m',31),('n',32),('o',33),('p',34),
+    ('m',32),('n',33),('o',34),('p',35),
     // door
-    ('q',35)], &[ // 28x36 = 1008
-    "           N jk O           ",
-    "           N jk O           ",
+    ('q',3)], &[
+    // 28x36 = 1008
     "           N jk O           ",
     "AMMMMMMMMMMd cd cMMMMMMMMMMB",
     "N............  ............O",
@@ -1188,9 +1227,9 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
     "     N.jelld cd cllfk.O     ",
     "     N.jk          jk.O     ",
     "     N.jk mPPqqPPn jk.O     ",
-    "MMMMMd.cd O      N cd.cMMMMM",
+    "MMMMMd.cd O      N cd.cMMMMMMM",
     "      .   O      N   .      ",
-    "PPPPPb.ab O      N ab.aPPPPP",
+    "PPPPPb.ab O      N ab.aPPPPPPP",
     "     N.jk oMMMMMMp jk.O     ",
     "     N.jk          jk.O     ",
     "     N.jk aiiiiiib jk.O     ",
@@ -1206,6 +1245,7 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
     "N.clllllllld.cd.clllllllld.O",
     "N..........................O",
     "CPPPPPPPPPPb ab aPPPPPPPPPPD",
+    "           N jk O           ",
     "           N jk O           ",
     "           N jk O           ",]);
     offsets
