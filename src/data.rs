@@ -1227,9 +1227,9 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
     "     N.jelld cd cllfk.O     ",
     "     N.jk          jk.O     ",
     "     N.jk mPPqqPPn jk.O     ",
-    "MMMMMd.cd O      N cd.cMMMMMMM",
+    "MMMMMd.cd O      N cd.cMMMMMMM", // 2 tile overscan
     "      .   O      N   .      ",
-    "PPPPPb.ab O      N ab.aPPPPPPP",
+    "PPPPPb.ab O      N ab.aPPPPPPP", // 2 tile overscan
     "     N.jk oMMMMMMp jk.O     ",
     "     N.jk          jk.O     ",
     "     N.jk aiiiiiib jk.O     ",
@@ -1246,6 +1246,7 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
     "N..........................O",
     "CPPPPPPPPPPb ab aPPPPPPPPPPD",
     "           N jk O           ",
+    // 2 row overscan
     "           N jk O           ",
     "           N jk O           ",]);
     offsets

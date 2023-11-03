@@ -17,7 +17,7 @@ pub fn sleep (ms: u64)  {
 
 ////////////////////////////////////////
 
-pub const fn neg_mod (n: usize, b: usize) -> usize { b - n }
+//pub const fn neg_mod (n: usize, b: usize) -> usize { b - n }
 
 pub struct Rnd (u16);
 
