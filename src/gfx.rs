@@ -20,6 +20,7 @@ pub const BLK:  char = '▉'; // left 7/8th block 2589
 
 ////////////////////////////////////////
 
+#[derive(Debug)]
 pub struct Dim {
     pub width: usize,
     pub height: usize,
@@ -27,19 +28,12 @@ pub struct Dim {
 }
 
 const fn Dim(width: usize, height: usize) -> Dim {
-    Dim{width, height, volume: width*height}
+  Dim{width, height, volume: width*height}
 }
 
-//#[derive(Clone,Copy,Default,PartialEq,Debug)]
-//pub struct _Loc {
-//  pub x: usize,
-//  pub y: usize,
-//}
-////const fn Loc (x: usize, y: usize) -> Loc {
- // Loc{x, y}
-//}
+////////////////////////////////////////
 
-#[derive(Debug, Clone,Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Mvec {
   pub w: usize,
   pub h: usize,
@@ -48,21 +42,20 @@ pub struct Mvec {
 }
 
 impl Mvec {
-  //pub const RT: usize = 0;
-  //pub const DN: usize = 1;
-  //pub const LF: usize = 2;
-  //pub const UP: usize = 3;
   pub fn equal (&self, o: &Mvec) -> bool {
     self.x() == o.x() && self.y() == o.y()
   }
-  pub fn new (w: usize, h: usize, x: usize, y: usize) -> Mvec { Mvec{w, h, x:(w<<32)+x, y:(h<<32)+y} }
-  pub fn set (&mut self, x: usize, y: usize) { self.x=(self.w<<32)+x; self.y=(self.h<<32)+y }
-  pub fn _seti(&mut self, x: isize, y: isize) {
-    self.x=(self.w<<32)+(self.w as isize + x) as usize;
-    self.y=(self.h<<32)+(self.h as isize + y) as usize;
+  pub fn new (w: usize, h: usize, x: usize, y: usize) -> Mvec {
+    Mvec{w, h,
+      x: (w<<32) + x,
+      y: (h<<32) + y
+    }
   }
-  pub fn _area (&self) -> usize { self.w * self.h }
-  pub fn shift (&mut self, dir: usize, mag: usize) -> &mut Mvec {
+  pub fn set (&mut self, x: usize, y: usize) {
+    self.x = x + (self.w << 32);
+    self.y = y + (self.h << 32);
+  }
+  pub fn shift (&mut self, dir: usize, mag: usize) {
     match dir {
       0 => self.x += mag,
       1 => self.y += mag,
@@ -70,25 +63,17 @@ impl Mvec {
       3 => self.y -= mag,
       _ => ()
     }
-    self
-  }
-  pub fn _next (&self, dir: usize) -> Mvec {
-    match dir {
-      0 => Mvec{w:self.w, h:self.h, x:self.x+1, y:self.y},
-      1 => Mvec{w:self.w, h:self.h, x:self.x,   y:self.y+1},
-      2 => Mvec{w:self.w, h:self.h, x:self.x-1, y:self.y},
-      3 => Mvec{w:self.w, h:self.h, x:self.x,   y:self.y-1},
-      _ => *self
-    }
   }
   pub fn x (&self) -> usize { self.x % self.w }
   pub fn y (&self) -> usize { self.y % self.h }
 }
 
+////////////////////////////////////////
+
 #[derive(Clone,Copy)]
 pub struct Sprite {
     pub data: usize,
-    pub locWindow: Mvec,
+    pub locView: Mvec,
     pub en: bool,
 }
 
@@ -96,7 +81,7 @@ impl Default for Sprite {
   fn default () -> Sprite {
     Sprite{
       data: 0,
-      locWindow: Mvec::new(WINDOW.width, WINDOW.height, 0, 0),
+      locView: Mvec::new(WINDOW.width, WINDOW.height, 0, 0), // this is changed to spriteView modulus
       en:false
     }
   }
@@ -105,7 +90,7 @@ impl Default for Sprite {
 ////////////////////////////////////////////////////////////////////////////////
 
 const MEMORYSIZE: usize = 256*256;
-const SPRITECOUNT: usize = 16;
+pub const SPRITECOUNT: usize = 18;
 
 pub const   TILE: Dim = Dim(8, 8);
 pub const SPRITE: Dim = Dim(16, 16);
@@ -152,7 +137,7 @@ impl Graphics {
       worldDirty:    [true; WORLD.volume],
       sprites:   [Sprite::default(); SPRITECOUNT],
 
-      spriteTileCenterAdj: Mvec::new(WINDOW.width, WINDOW.height,
+      spriteTileCenterAdj: Mvec::new(0, 0,
         ((TILE.width as isize - SPRITE.width as isize) / 2) as usize ,
         ((TILE.height as isize - SPRITE.height as isize) / 2) as usize ),
 
@@ -197,37 +182,43 @@ impl Graphics {
     });
   }
 
-  //pub fn _getTile (&self, loc: Loc) -> u8 {
-  //  self.world[loc.x + loc.y*WORLD.width]
-  //}
+  pub fn enableSprite (&mut self, sprite: usize) {
+    self.sprites[sprite].en = true;
+  }
+  pub fn setLocViewFromSprite (&mut self, sprite: usize) {
+    let s = &mut self.sprites[sprite];
+    s.locView.w = self.spriteView.w;
+    s.locView.h = self.spriteView.h;
+  }
 
   fn getFieldTile (&self, x: usize, y: usize) -> u8 {
     self.world[x + y*WORLD.width]
   }
 
-  pub fn getFieldTiles<F,R> (&self, xf: usize, yf: usize, f: F) -> [(R, usize, isize, isize); 4]
+  pub fn getFieldCardinalTiles<F,R> (&self, xf: usize, yf: usize, f: F) -> [(R, usize, isize, isize); 4]
   where F: Fn(u8)->R
   {
-    let y = yf*WORLD.width;
+    let row = yf*WORLD.width;
     [
-      (f(self.world[(xf+1)%WORLD.width + y]),                      0, xf as isize + 1, yf as isize),
-      (f(self.world[(xf+y+WORLD.width) % WORLD.volume]),            1, xf as isize,     yf as isize+1),
-      (f(self.world[(xf+WORLD.width-1)%WORLD.width + y]),           2, xf as isize - 1, yf as isize),
-      (f(self.world[(xf+y+WORLD.volume-WORLD.width) % WORLD.volume]),3, xf as isize,     yf as isize-1),
+      (f(self.world[(xf+1)%self.spriteField.w + row]),                        0, xf as isize + 1, yf as isize),
+      (f(self.world[(xf+row+WORLD.width) % WORLD.volume]),             1, xf as isize,     yf as isize+1),
+      (f(self.world[(xf+self.spriteField.w-1)%self.spriteField.w + row]),            2, xf as isize - 1, yf as isize),
+      (f(self.world[(xf+row+WORLD.volume-WORLD.width) % WORLD.volume]),3, xf as isize,     yf as isize-1),
     ]
   }
 
   pub fn setFieldTile(&mut self, x: usize, y: usize, tile: u8) -> u8{
-      let old = self.world[x+y*WORLD.width];
-      self.world[x+y*WORLD.width] = tile;
+      let idx = x + y*WORLD.width;
+      let old = self.world[idx];
+      self.world[idx] = tile;
       old
   }
 
-  pub fn setSpriteLocWindow(&mut self, sprite: usize, x: usize, y:usize) {
-    self.sprites[sprite].locWindow.set(x, y);
+  pub fn setSpriteLocWindow(&mut self, sprite: usize, x: usize, y: usize) {
+    self.sprites[sprite].locView.set(x, y);
   }
   pub fn shiftSprite(&mut self, sprite: usize, dir: usize, mag: usize) {
-    self.sprites[sprite].locWindow.shift(dir, mag);
+    self.sprites[sprite].locView.shift(dir, mag);
   }
   pub fn setSpriteIdx(&mut self, sprite: usize, p: usize) {
     self.sprites[sprite].data = p;
@@ -236,30 +227,39 @@ impl Graphics {
   pub fn setFieldSize(&mut self, w: usize, h: usize) {
     self.field = Mvec::new(w, h, 0, 0);
     self.view = Mvec::new(w*TILE.width, h*TILE.height, 0, 0);
-
-    self.spriteField = Mvec::new(w+(SPRITE.width+TILE.width-1)/TILE.width, h+(SPRITE.height+TILE.height-1)/TILE.height, 0, 0);
-    self.spriteView = Mvec::new(self.spriteField.w*TILE.width, self.spriteField.h*TILE.height, 0, 0);
-
-    self.spriteTileCenterAdj = Mvec::new(self.spriteView.w, self.spriteView.h,
-      ((TILE.width as isize - SPRITE.width as isize) / 2) as usize ,
-      ((TILE.height as isize - SPRITE.height as isize) / 2) as usize );
+    self.spriteField = Mvec::new(
+      w + (SPRITE.width + TILE.width - 1) / TILE.width,
+      h + (SPRITE.height + TILE.height - 1) / TILE.height,
+      0, 0);
+    self.spriteView = Mvec::new(
+      self.spriteField.w * TILE.width,
+      self.spriteField.h * TILE.height,
+      0, 0);
   }
 
   pub fn centerRasterView(&mut self, sprite: usize) { // modulo spriteView
-    let x = self.sprites[sprite].locWindow.x();
-    let y = self.sprites[sprite].locWindow.y();
+    let x = self.sprites[sprite].locView.x();
+    let y = self.sprites[sprite].locView.y();
     let w = min(self.term.w, self.view.w);
     let h = min(self.term.h, self.view.h);
     self.rasterView.w = w;
     self.rasterView.h = h;
     self.rasterView.x =
-      min(max(0, ((x + SPRITE.width/2) %(self.spriteView.w)) as isize - (w as isize /2)), (self.view.w-w) as isize) as usize;
+      min(
+        max(0, ((x + SPRITE.width) % self.spriteView.w - SPRITE.width/2) as isize - w as isize / 2),
+        (self.view.w-w) as isize)
+      as usize;
+
     self.rasterView.y =
-      min(max(0, ((y + SPRITE.height/2)%(self.spriteView.h)) as isize - (h as isize /2)), (self.view.h-h) as isize) as usize;
+      min(
+        max(0, ((y + SPRITE.height) % self.spriteView.h - SPRITE.height/2) as isize - h as isize / 2),
+        (self.view.h-h) as isize)
+      as usize;
+    self.msg = format!("{}    ", x + 8 - w/2);
    }
 
   pub fn rasterizeTilesSprites(&mut self, dataTiles: usize) {
-    // tiles
+    // render tiles
     for fy in 0..self.field.h {
     for fx in 0..self.field.w {
       if !self.worldDirty[fx+fy*WORLD.width] { continue }
@@ -273,13 +273,12 @@ impl Graphics {
       }}
     }}
 
-
-    // sprites
+    // render sprites
     for s in 0..SPRITECOUNT {
       if ! self.sprites[s].en { continue }
 
-      let xwindow = self.sprites[s].locWindow.x();
-      let ywindow = self.sprites[s].locWindow.y();
+      let xwindow = self.sprites[s].locView.x();
+      let ywindow = self.sprites[s].locView.y();
 
       // dirty the tile bit
       let (wsf, hsf) = {
@@ -301,23 +300,23 @@ impl Graphics {
 
       let spritedata = self.sprites[s].data;
       for shy in 0..SPRITE.height {
-          let y = (ywindow + shy)   % self.spriteView.h;
+          let y = (ywindow + shy) % self.spriteView.h;
           //if self.view.h <= y { continue }
           for swx in 0..SPRITE.width {
               let x = (xwindow + swx) % self.spriteView.w;
               //if self.view.w <= x { continue }
               match self.memory[spritedata + swx + shy * SPRITE.width] {
-                0 => continue, // transparent
+                0 => continue, // transparent pixel
                 b => self.framebuff[x + y*WINDOW.width] = b
-              } // match
+              }
           } // for x
       } // for y
     } // for s
   }
 
   pub fn printField(&mut self) {
-    let w = self.rasterView.w; // min(self.term.w, self.view.w);
-    let h = self.rasterView.h; // min(self.term.h, self.view.h);
+    let w = self.rasterView.w;
+    let h = self.rasterView.h;
 
     self.buff.clear();
     write!(self.buff, "\x1b[H\x1b[30m").ok();
@@ -369,7 +368,7 @@ impl Graphics {
       print!("\x1b[H\x1b[37m{}", self.msg);
       //self.msg.clear();
     }
-    //print!("\x1b[{};{}H\x1b[37m🚽", h/2, w/2);
+    print!("\x1b[{};{}H\x1b[37m🚽", h/2, w/2);
   }
 } // impl Graphics
 

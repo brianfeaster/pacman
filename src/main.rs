@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use std::{
-  cell::RefCell,
+  cell::{RefCell},
   io::{stdin, Read},
   rc::Rc,
   sync::mpsc::{channel, Receiver},
@@ -25,14 +25,13 @@ fn square_diff(a: isize, b: usize) -> usize {
 }
 
 fn dist (x: isize, y: isize, mloc: &Mvec) -> usize {
-  square_diff(x, mloc.x) + square_diff(y, mloc.y)
+  square_diff(x, mloc.x()) + square_diff(y, mloc.y())
 }
 
 fn opposite (dir: usize) -> usize { match dir { 4 => 4, dir => dir+2 & 3 } }
 
 fn nextdir (vid: &mut Graphics, loc: &Mvec, dir: usize, bias: usize) -> usize {
-  let validDirs = vid.getFieldTiles(loc.x(), loc.y(), |t|t<3);
-
+  let validDirs = vid.getFieldCardinalTiles(loc.x(), loc.y(), |t|t<3);
   if dir==4 {
     // maybe resume movement
     if bias != 4 && validDirs[bias].0 { bias } else { 4 }
@@ -52,7 +51,7 @@ fn randir (vid: &mut Graphics, loc: &Mvec, dir: usize, bias: usize, wallIdx: usi
   let y = loc.y();
   if WORLD.width <= x || WORLD.height <= y { return dir } // If off field dont change direction.
   // Weighted scoring to determine next direction.
-  let mut validDirs = vid.getFieldTiles(x, y, |t|IF!((t as usize) < wallIdx, 7, 1)); // Available direction score: +7, else +1 so no final score negative
+  let mut validDirs = vid.getFieldCardinalTiles(x, y, |t|IF!((t as usize) < wallIdx, 7, 1)); // Available direction score: +7, else +1 so no final score negative
   validDirs[opposite(dir)].0 -= 3; // Reverse current direction: -3, only go backwards if dead-end
   if 4!=bias {
     validDirs[bias].0 += 1;        // Desired direction: +1
@@ -69,23 +68,29 @@ fn randir (vid: &mut Graphics, loc: &Mvec, dir: usize, bias: usize, wallIdx: usi
 }
 
 fn dirGhostNew (vid: &mut Graphics, ghost: &Ghost, wallIdx: usize) -> usize {
-  let loc = &ghost.locField; // modulo spriteField
+  let loc = &ghost.locField;
   let xg = loc.x();
   let yg = loc.y();
+  let scaredP = wallIdx==3 && ghost.isScared();
   let dir = ghost.dir;
 
+  // Give each direction a weight:  Distance to pacman or MAX if wall
   let mut validDirs = vid
-    .getFieldTiles(xg, yg, |t| (t as usize) < wallIdx)
-    .map(|(hall, dir, xf, yf)| ( // Available directions scored with Pukman distance, otherwise MAX
-       IF!(hall, dist(xf, yf, &ghost.goalSpritefieldMvec), usize::MAX),
-       dir));
-  validDirs[opposite(dir)].0 = usize::MAX-1; // Opposite direction is MAX-1
+    .getFieldCardinalTiles(xg, yg, |t| (t as usize) < wallIdx)
+    .map(|(hall, dir, xf, yf)|
+      (
+        IF!(hall, 1+dist(xf, yf, &ghost.locGoalField), usize::MAX),
+        dir
+      ));
 
-  if ghost.isScared() && wallIdx==3 { // "invert" scores so "away from Pukman" chosen unless in box
-    validDirs
-      .iter_mut()
-      .for_each(|t| t.0 = usize::MAX/2 - t.0 )
+  // Scared ghosts:  invert scores so furthest is chosen
+  if scaredP {
+    validDirs.iter_mut()
+      .for_each(|t| t.0 = usize::MAX - 1 - t.0 );
   }
+
+  // Opposite direction is better than MAX, but worse than pacman distance
+  validDirs[opposite(dir)].0 = usize::MAX-1;
 
   validDirs.sort_by(|a,b|a.0.cmp(&b.0));
   let r = // Tied best scored chosen randomly
@@ -106,6 +111,82 @@ trait Entity {
 
 ////////////////////////////////////////
 
+struct Portal {
+    vid: Rc<RefCell<Graphics>>,
+    pub tick: usize,
+    sprite: usize,
+    data: usize,
+    data2: usize,
+    dir: usize,     // direction of next location
+    dir2: usize,
+    locField: Mvec, // current field location
+    locField2: Mvec,
+}
+
+impl Portal {
+  fn new (
+    vid: Rc<RefCell<Graphics>>,
+    sprite: usize,
+    data: usize,
+    data2: usize,
+    x:usize, y:usize,
+    dir: usize
+  ) -> Portal {
+    let locField = {
+      let v = vid.borrow_mut();
+      Mvec::new(v.spriteField.w, v.spriteField.h, x, y)
+    };
+    let mut g = Portal{
+      vid, tick:0,
+      sprite,
+      data, dir, locField,
+      data2, dir2:(dir+2)%4, locField2:locField,
+    };
+    g.render();
+    g
+  }
+}
+
+impl Entity for Portal {
+  fn render (&mut self) {
+    let vid = &mut self.vid.borrow_mut();
+    let step = self.tick/2;
+
+    let (x, y) = (
+      (self.locField.x*TILE.width  + vid.spriteTileCenterAdj.x)%vid.spriteView.w,
+      (self.locField.y*TILE.height + vid.spriteTileCenterAdj.y)%vid.spriteView.h
+    );
+    vid.setSpriteLocWindow(self.sprite, x, y);
+    vid.shiftSprite(self.sprite, self.dir, step % 8);
+    vid.setSpriteIdx(self.sprite, self.data+SPRITE.volume*(step/4%6));
+
+    let (x, y) = (
+      (self.locField2.x*TILE.width  + vid.spriteTileCenterAdj.x)%vid.spriteView.w,
+      (self.locField2.y*TILE.height + vid.spriteTileCenterAdj.y)%vid.spriteView.h
+    );
+    vid.setSpriteLocWindow(self.sprite+1, x, y);
+    vid.shiftSprite(self.sprite+1, self.dir2, step%8);
+    vid.setSpriteIdx(self.sprite+1, self.data2 + SPRITE.volume*(step/4%6));
+
+  }
+
+  fn tick (&mut self) {
+    self.tick += 1;
+    if 1 == (self.tick&1) { return } // move at half rate
+    let step = self.tick/2 % 8;
+    if 0 == step {
+      self.locField.shift(self.dir, 1);
+      self.dir = randir(&mut self.vid.borrow_mut(), &self.locField, self.dir, 4, 3);
+
+      self.locField2.shift(self.dir2, 1);
+      self.dir2 = randir(&mut self.vid.borrow_mut(), &self.locField2, self.dir2, 4, 3);
+    }
+    self.render();
+  }
+} // impl Entity for Portal
+
+////////////////////////////////////////
+
 struct Ghost {
     vid: Rc<RefCell<Graphics>>,
     pub tick: usize,
@@ -115,7 +196,7 @@ struct Ghost {
     dataEyes: usize,
     dir: usize,      // direction of next location
     locField: Mvec, // Current field location
-    goalSpritefieldMvec: Mvec,
+    locGoalField: Mvec,
     state: usize, // 0 normal, _ ghost, MAX eyes
     score: usize
 }
@@ -130,27 +211,24 @@ impl Ghost {
     x:usize, y:usize,
     dir: usize
   ) -> Ghost {
-    let (locField, goalSpritefieldMvec) = {
-      let mut v = vid.borrow_mut();
+    let (locField, locGoalField) = {
+      let v = vid.borrow_mut();
       let loc = (
         Mvec::new(v.spriteField.w, v.spriteField.h, x, y),
         Mvec::new(v.spriteField.w, v.spriteField.h, x, y)
       );
-      v.sprites[sprite].locWindow.w = v.spriteView.w;
-      v.sprites[sprite].locWindow.h = v.spriteView.h;
       loc
     };
-    //if 4!=dir { locField.shift(opposite(dir), 1); }
     let mut g = Ghost{
       vid, tick:0,
       sprite, data, dataScared, dataEyes, dir,
-      locField, goalSpritefieldMvec,
+      locField, locGoalField,
       state:0, score:0
     };
     g.render();
     g
   }
-  fn setLocFgoal (&mut self, ml: &Mvec) { self.goalSpritefieldMvec.x=ml.x(); self.goalSpritefieldMvec.y=ml.y() }
+  fn setLocFgoal(&mut self, ml: &Mvec) { self.locGoalField = *ml; }
   fn scared (&mut self) { if self.state != usize::MAX { self.state = 256 } }
   fn isScared (&self) -> bool { 0<self.state && usize::MAX!=self.state }
 }
@@ -161,8 +239,8 @@ impl Entity for Ghost {
     let vid = &mut self.vid.borrow_mut();
     // location
     let (x, y) = (
-      (self.locField.x() * TILE.width  + vid.spriteTileCenterAdj.x)%vid.spriteView.w,
-      (self.locField.y() * TILE.height + vid.spriteTileCenterAdj.y)%vid.spriteView.h
+      (self.locField.x*TILE.width  + vid.spriteTileCenterAdj.x)%vid.spriteView.w,
+      (self.locField.y*TILE.height + vid.spriteTileCenterAdj.y)%vid.spriteView.h
     );
     vid.setSpriteLocWindow(self.sprite, x, y);
     // step
@@ -179,7 +257,7 @@ impl Entity for Ghost {
   fn tick (&mut self) {
     let mut wallIdx = 3;
 
-    if 1<(self.state+1) && self.locField.equal(&self.goalSpritefieldMvec) {
+    if 1<(self.state+1) && self.locField.equal(&self.locGoalField) {
       // ghost eaten, becomes eyes
       self.state = usize::MAX;
       self.score += 10000;
@@ -187,8 +265,8 @@ impl Entity for Ghost {
 
     if self.state == usize::MAX {
       // Eyes' goal is home base
-      self.goalSpritefieldMvec.x=14;
-      self.goalSpritefieldMvec.y=15;
+      self.locGoalField.x=17;
+      self.locGoalField.y=18;
       wallIdx = 4; // can walk through door
     }
 
@@ -204,17 +282,17 @@ impl Entity for Ghost {
       self.locField.shift(self.dir, 1);
     }
 
-    if self.state == usize::MAX && self.locField.equal(&self.goalSpritefieldMvec) {
+    if self.state == usize::MAX && self.locField.equal(&self.locGoalField) {
       // eyes regenerate to ghost in base
       self.state = 0;
     }
 
     // Ghosts want to leave box (coordinates includes box border)
     if self.state != usize::MAX
-        && 10<=self.locField.x() && self.locField.x()<=17
-        && 13<=self.locField.y() && self.locField.y()<=17 {
-      self.goalSpritefieldMvec.x=13;
-      self.goalSpritefieldMvec.y=0;
+        && 13<=self.locField.x() && self.locField.x()<=20
+        && 15<=self.locField.y() && self.locField.y()<=19 {
+      self.locGoalField.x=13;
+      self.locGoalField.y=0;
       self.state = 0;
       wallIdx = 4
     }
@@ -222,7 +300,7 @@ impl Entity for Ghost {
     if 0 == (self.tick/2) % 8 {
       let vid = &mut self.vid.borrow_mut();
       self.dir =
-        if self.state==0 && vid.rnd.rnd()&7 == 0 {
+        if vid.rnd.rnd()&15 == 0 {
           randir(vid, &self.locField, self.dir, 4, wallIdx) // sometimes move randomly
         } else {
           dirGhostNew(vid, &self, wallIdx)
@@ -257,11 +335,9 @@ impl Pukman {
     dir: usize
   ) -> Pukman {
     let locField = {
-      let mut v = vid.borrow_mut();
+      let v = vid.borrow_mut();
       let mut loc = Mvec::new(v.spriteField.w, v.spriteField.h, x, y);
       if 4!=dir { loc.shift(opposite(dir), 1); }
-      v.sprites[sprite].locWindow.w = v.spriteView.w;
-      v.sprites[sprite].locWindow.h = v.spriteView.h;
       loc
     };
     let mut p = Pukman{
@@ -289,13 +365,14 @@ impl Pukman {
 }
 
 impl Entity for Pukman {
+
   fn render (&mut self) {
     let vid = &mut self.vid.borrow_mut();
 
     // Update sprite's location
     let (x, y) = (
-      ((self.locField.x()*TILE.width  + vid.spriteTileCenterAdj.x))%vid.spriteView.w,
-      ((self.locField.y()*TILE.height + vid.spriteTileCenterAdj.y))%vid.spriteView.h
+      ((self.locField.x*TILE.width  + vid.spriteTileCenterAdj.x))%vid.spriteView.w,
+      ((self.locField.y*TILE.height + vid.spriteTileCenterAdj.y))%vid.spriteView.h
     );
     vid.setSpriteLocWindow(self.sprite, x, y);
 
@@ -306,7 +383,7 @@ impl Entity for Pukman {
     vid.setSpriteIdx(self.sprite, self.data + SPRITE.volume *
       match self.dir {
         4 => 0,
-        _ => match self.tick%4 {
+        _ => match self.tick/2%4 {
               1|3 => self.dir * 2 + 1,
               2   => self.dir * 2 + 2,
               _   => 0
@@ -325,11 +402,10 @@ impl Entity for Pukman {
     self.tick += 1;
     if 0 == self.tick%8 {
       let vid = &mut self.vid.borrow_mut();
-      // Upddate field loc
-      self.locField.shift(self.dir, 1);
+      self.locField.shift(self.dir, 1); // Upddate field loc
       // Maybe eat pill and become ghost-hungry if powerpill
-      let dot = vid.setFieldTile(self.locField.x(), self.locField.y(), 0);
-      self.score += match dot {
+      let maybeDot = vid.setFieldTile(self.locField.x(), self.locField.y(), 0);
+      self.score += match maybeDot {
         1 => { 1 }
         2 => { self.hungry=true; 1000 }
         _ => 0
@@ -347,6 +423,7 @@ struct ArcadeGame {
   vid: Rc<RefCell<Graphics>>,
   keyboard: Receiver<u8>,
   pukman: Pukman,
+  portal: Portal,
   ghosts: [Ghost; 4],
   digitsMem: usize,
   dataTiles: usize,
@@ -356,38 +433,41 @@ struct ArcadeGame {
 
 impl ArcadeGame {
   fn new (mut vid: Graphics) -> Self {
-    vid.setFieldSize(28, 33);
+    vid.setFieldSize(34, 37);
     let keyboard = ArcadeGame::initKeyboardReader();
 
     // Load sprite and tile data
     let offsets = initializeVideoDataPukman(&mut vid);
 
     // Digits
-    let digitsMem = offsets[8];
+    let digitsMem = offsets[10];
 
     // Tiles
-    let dataTiles = offsets[9];
+    let dataTiles = offsets[11];
 
-    // Enable all sprites
-    (0..16).for_each(|i| vid.sprites[i].en = true);
+    // Enable all sprites and adjust their view
+    (0..SPRITECOUNT).for_each(|i| {
+      vid.enableSprite(i);
+      vid.setLocViewFromSprite(i);
+    });
 
     // Drinkybird
     let drinkyBirdData = offsets[7];
     vid.sprites[15].data = drinkyBirdData;
-    vid.setSpriteLocWindow(15, 13*TILE.width, 15*TILE.width-TILE.width/2);
+    vid.setSpriteLocWindow(15, 17*TILE.width, 17*TILE.width-TILE.width/2);
 
-    // Ghosts
     let vid : Rc<RefCell<Graphics>> = Rc::new(RefCell::new(vid));
-    let ghosts = [
-      Ghost::new(vid.clone(), 1, offsets[0], offsets[4], offsets[5],  9, 12, 0),  //blinky
-      Ghost::new(vid.clone(), 2, offsets[1], offsets[4], offsets[5], 18, 12, 1),  //pinky
-      Ghost::new(vid.clone(), 3, offsets[2], offsets[4], offsets[5],  9, 18, 3),  //inky
-      Ghost::new(vid.clone(), 4, offsets[3], offsets[4], offsets[5], 18, 18, 2),  //clyde
-    ];
-    // Pukman
-    let pukman = Pukman::new(vid.clone(), 0, offsets[6], 15, 18, 2);  // 13.5/24
 
-    ArcadeGame{vid, keyboard, pukman, ghosts, digitsMem, dataTiles, drinkyBirdData, esc:0}
+    let pukman = Pukman::new(vid.clone(), 0, offsets[6], 17, 20, 2);  // 15,18
+    let ghosts = [
+      Ghost::new(vid.clone(), 1, offsets[0], offsets[4], offsets[5], 12, 14, 0),  //blinky
+      Ghost::new(vid.clone(), 2, offsets[1], offsets[4], offsets[5], 21, 14, 1),  //pinky
+      Ghost::new(vid.clone(), 3, offsets[2], offsets[4], offsets[5], 12, 20, 3),  //inky
+      Ghost::new(vid.clone(), 4, offsets[3], offsets[4], offsets[5], 21, 20, 2),  //clyde
+    ];
+    let portal = Portal::new(vid.clone(), 16, offsets[8], offsets[9],16, 26, 2);
+
+    ArcadeGame{vid, keyboard, pukman, portal, ghosts, digitsMem, dataTiles, drinkyBirdData, esc:0}
   } // fn new
 
   fn initKeyboardReader () -> Receiver<u8> {
@@ -446,21 +526,39 @@ impl ArcadeGame {
     let mut mark = SystemTime::now();
     let mut avg = Average::new(256);
     let mut fps = 0;
+    let mut portalWait = 0;
     print!("\x1bc\x1b[?25l\x1b[0;37;40m");
 
     while self.checkKeyboard() {
+      if 0 == portalWait {
+        let vid = self.vid.borrow();
+        if vid.sprites[self.pukman.sprite].locView.equal(&vid.sprites[self.portal.sprite].locView) {
+          self.pukman.locField = self.portal.locField2;
+          self.pukman.dir = (self.portal.dir2+0)%4;
+          self.pukman.bias = (self.portal.dir2+0)%4;
+          portalWait = 8;
+        } else if vid.sprites[self.pukman.sprite].locView.equal(&vid.sprites[self.portal.sprite+1].locView) {
+          self.pukman.locField = self.portal.locField;
+          self.pukman.dir = (self.portal.dir+0)%4;
+          self.pukman.bias = (self.portal.dir+0)%4;
+          portalWait = 8;
+        }
+      } else if 0 < portalWait {
+        portalWait -= 1;
+      }
+      self.portal.tick();
       self.pukman.tick();
-      self.ghosts.iter_mut().for_each(|g| {
+      for g in &mut self.ghosts {
         if self.pukman.hungry { g.scared() }
         g.setLocFgoal(&self.pukman.locField);
         g.tick()
-      });
+      }
       self.pukman.hungry=false;
-      self.vid.borrow_mut().sprites[15].data = self.drinkyBirdData + self.pukman.tick/8%2*256; // Drinkybird
+      self.vid.borrow_mut().sprites[15].data = self.drinkyBirdData + 256*self.ghosts[0].tick/8%2; // Drinkybird
       self.renderFrame(fps, self.pukman.score + self.ghosts.iter().map(|g|g.score).sum::<usize>());
       // Nex5 average frame time not include sleep time
       fps = 1000000 / avg.add(mark.elapsed().unwrap_or_default().as_micros() as usize);
-      sleep(40);
+      sleep(20);
       mark = SystemTime::now();
     }
     println!("\x1b[m\x1b[?25h");

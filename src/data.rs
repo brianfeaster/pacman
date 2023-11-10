@@ -255,9 +255,9 @@ fn writeGhostEyes1024b (vid: &mut Graphics) -> usize {
 }
 
 fn writePukman2304b (vid: &mut Graphics) -> usize {
-  vid.memorySetCharColorMap(&[(' ',0), ('o',11)]);
+  vid.memorySetCharColorMap(&[(' ',0), ('c', 0), ('o',11)]);
   vid.initializeMemory(&[
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooooo    ",
     "  ooooooooooo   ",
@@ -272,9 +272,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooooo    ",
     "  ooooooooooo   ",
@@ -289,9 +289,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooo      ",
     "  ooooooo       ",
@@ -306,9 +306,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooo      ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooooo    ",
     "  ooooooooooo   ",
@@ -323,9 +323,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   oo     oo    ",
     "                ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooooo    ",
     "  ooooooooooo   ",
@@ -340,9 +340,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "                ",
     "                ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "   ooooooooo    ",
     "  ooooooooooo   ",
@@ -357,9 +357,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "     ooooo      ",
     "     ooooooo    ",
     "     oooooooo   ",
@@ -374,9 +374,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "     ooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "                ",
     "   oo     oo    ",
     "  ooo     ooo   ",
@@ -391,9 +391,9 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",
+    "c              c",
     //
-    "                ",
+    "c              c",
     "                ",
     "                ",
     "                ",
@@ -408,7 +408,7 @@ fn writePukman2304b (vid: &mut Graphics) -> usize {
     "   ooooooooo    ",
     "     ooooo      ",
     "                ",
-    "                ",])
+    "c              c",])
 }
 
 
@@ -796,6 +796,7 @@ fn writeIgnignok (vid: &mut Graphics) -> usize {
     "                ",
   ])
 }
+
 fn _writeDrinkyBird (vid: &mut Graphics) -> usize {
   vid.memorySetCharColorMap(&[(' ',0), ('g',2), ('b',4), ('r',1),('h',7),('w',15)]);
   vid.initializeMemory(&[
@@ -832,6 +833,112 @@ fn _writeDrinkyBird (vid: &mut Graphics) -> usize {
     "         rr     ",
     "      r  rr     ",
     "      rrrrr     ",
+  ])
+
+}
+fn writePortal (vid: &mut Graphics) -> usize {
+  vid.initializeMemory(&[
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r...rr...r   ",
+    "  r..rr  rr..r  ",
+    " r..r      r..r ",
+    " r.r        r.r ",
+    "r..r        r..r",
+    "r.r          r.r",
+    "r.r          r.r",
+    "r..r        r..r",
+    " r.r        r.r ",
+    " r..r      r..r ",
+    "  r..rr  rr..r  ",
+    "   r...rr...r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
+
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r........r   ",
+    "  r...rrrr...r  ",
+    " r...r    r...r ",
+    " r..r      r..r ",
+    "r..r        r..r",
+    "r..r        r..r",
+    "r..r        r..r",
+    "r..r        r..r",
+    " r..r      r..r ",
+    " r...r    r...r ",
+    "  r...rrrr...r  ",
+    "   r........r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
+
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r........r   ",
+    "  r..........r  ",
+    " r.....rr.....r ",
+    " r....r  r....r ",
+    "r....r    r....r",
+    "r...r      r...r",
+    "r...r      r...r",
+    "r....r    r....r",
+    " r....r  r....r ",
+    " r.....rr.....r ",
+    "  r..........r  ",
+    "   r........r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
+
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r........r   ",
+    "  r..........r  ",
+    " r............r ",
+    " r.....rr.....r ",
+    "r.....r  r.....r",
+    "r....r    r....r",
+    "r....r    r....r",
+    "r.....r  r.....r",
+    " r.....rr.....r ",
+    " r............r ",
+    "  r..........r  ",
+    "   r........r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
+
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r........r   ",
+    "  r..........r  ",
+    " r............r ",
+    " r............r ",
+    "r......rr......r",
+    "r.....r  r.....r",
+    "r.....r  r.....r",
+    "r......rr......r",
+    " r............r ",
+    " r............r ",
+    "  r..........r  ",
+    "   r........r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
+
+    "      rrrr      ",
+    "    rr....rr    ",
+    "   r........r   ",
+    "  r..........r  ",
+    " r............r ",
+    " r............r ",
+    "r..............r",
+    "r......rr......r",
+    "r......rr......r",
+    "r..............r",
+    " r............r ",
+    " r............r ",
+    "  r..........r  ",
+    "   r........r   ",
+    "    rr....rr    ",
+    "      rrrr      ",
   ])
 }
 
@@ -1166,9 +1273,9 @@ fn writeTiles (vid: &mut Graphics) -> usize {
 }
 
 
-pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
+pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 12] {
 
-  let mut offsets: [usize; 10] = [0; 10];
+  let mut offsets: [usize; 12] = [0; 12];
 
   vid.memorySetCharColorMap(&[(' ',0), ('#',4), ('a',9),  ('.',15)]);
   offsets[0] = writeGhost2048b(vid);
@@ -1187,67 +1294,75 @@ pub fn initializeVideoDataPukman (vid: &mut Graphics) -> [usize; 10] {
   offsets[6] = writePukman2304b(vid);
   //offsets[7] = writeDrinkyBird(vid);
   offsets[7] = writeIgnignok(vid);
-  offsets[8] = writeDigits640b(vid);
-  offsets[9] = writeTiles(vid);
 
+  vid.memorySetCharColorMap(&[(' ',0), ('.', 16), ('r',12)]);
+  offsets[8] = writePortal(vid);
+  vid.memorySetCharColorMap(&[(' ',0), ('.', 16), ('r',11)]);
+  offsets[9] = writePortal(vid);
+
+  offsets[10] = writeDigits640b(vid);
+  offsets[11] = writeTiles(vid);
 
   vid.initializeFieldData(&[
     // nothing pill power-pill
     (' ',0), ('.',1), ('*',2),
-
     // double corners
     ('A',4), ('B',5), ('C',6), ('D',7),
-    ('E',8), ('F',9), ('G',10), ('H',11),
-    ('I',12),('J',13),('K',14),('L',15),
-    // double edges
+    ('E',8), ('F',9), ('G',10), ('H',11),// horizontal
+    ('I',12),('J',13),('K',14),('L',15), // vertical
+    // double edge
     ('M',16), ('N',17), ('O',18), ('P',19),
-
-    // corner
+    // corner small
     ('a',20), ('b',21), ('c',22), ('d',23),
-    // corner inside
+    // corner large (inside)
     ('e',24), ('f',25), ('g',26), ('h',27),
-    // edge
+    // edge single
     ('i',28),('j',29),('k',30),('l',31),
     // double hard corner
     ('m',32),('n',33),('o',34),('p',35),
     // door
     ('q',3)], &[
     // 28x36 = 1008
-    "           N jk O           ",
-    "AMMMMMMMMMMd cd cMMMMMMMMMMB",
-    "N............  ............O",
-    "N.aiib.aiiib.ab.aiiib.aiib.O",
-    "N*j  k.j   k.jk.j   k.j  k*O",
-    "N.clld.cllld.cd.cllld.clld.O",
-    "N..........................O",
-    "N.aiib.ab.aiiiiiib.ab.aiib.O",
-    "N.clld.jk.cllfelld.jk.clld.O",
-    "N......jk....jk....jk......O",
-    "CPPPPb.jgiib jk aiihk.aPPPPD",
-    "     N.jelld cd cllfk.O     ",
-    "     N.jk          jk.O     ",
-    "     N.jk mPPqqPPn jk.O     ",
-    "MMMMMd.cd O      N cd.cMMMMMMM", // 2 tile overscan
-    "      .   O      N   .      ",
-    "PPPPPb.ab O      N ab.aPPPPPPP", // 2 tile overscan
-    "     N.jk oMMMMMMp jk.O     ",
-    "     N.jk          jk.O     ",
-    "     N.jk aiiiiiib jk.O     ",
-    "AMMMMd.cd cllfelld cd.cMMMMB",
-    "N............jk............O",
-    "N.aiib.aiiib.jk.aiiib.aiib.O",
-    "N.clfk.cllld.cd.cllld.jeld.O",
-    "N*..jk.......  .......jk..*O",
-    "Kib.jk.ab.aiiiiiib.ab.jk.aiL",
-    "Ild.cd.jk.cllfelld.jk.cd.clJ",
-    "N......jk....jk....jk......O",
-    "N.aiiiihgiib.jk.aiihgiiiib.O",
-    "N.clllllllld.cd.clllllllld.O",
-    "N..........................O",
-    "CPPPPPPPPPPb ab aPPPPPPPPPPD",
-    "           N jk O           ",
-    // 2 row overscan
-    "           N jk O           ",
-    "           N jk O           ",]);
-    offsets
+    "AMMMMMMMMMMMMMd cd cMMMMMMMMMMMMMB",
+    "N................................O",
+    "N.aiiiiiiiiiiib.ab.aiiiiiiiiiiib.O",
+    "N.jelllllllllld.cd.cllllllllllfk.O",
+    "N.jk..........................jk.O",
+    "N.jk.aiib.aiiib.ab.aiiib.aiib.jk.O",
+    "N.jk*j  k.j   k.jk.j   k.j  k*jk.O",
+    "N.jk.clld.cllld.cd.cllld.clld.jk.O",
+    "N.jk..........................jk.O",
+    "N.jk.aiib.ab.aiiiiiib.ab.aiib.jk.O",
+    "N.jk.clld.jk.cllfelld.jk.clld.jk.O",
+    "N.jk......jk....jk....jk......jk.O",
+    "N.jGPPPPb.jgiib jk aiihk.aPPPPHk.O",
+    "N.O     N.jelld cd cllfk.O     N.O",
+    "N.O     N.jk          jk.O     N.O",
+    "N.O     N.jk mPPqqPPn jk.O     N.O",
+    "d.cMMMMMd.cd O      N cd.cMMMMMd.cMM",
+    " .........   O      N   .........  ",
+    "b.aPPPPPb.ab O      N ab.aPPPPPb.aPP",
+    "N.O     N.jk oMMMMMMp jk.O     N.O",
+    "N.O     N.jk          jk.O     N.O",
+    "N.O     N.jk aiiiiiib jk.O     N.O",
+    "N.jEMMMMd.cd cllfelld cd.cMMMMFk.O",
+    "N.jk............jk............jk.O",
+    "N.jk.aiib.aiiib.jk.aiiib.aiib.jk.O",
+    "N.jk.clfk.cllld.cd.cllld.jeld.jk.O",
+    "N.jk*..jk.......  .......jk..*jk.O",
+    "N.jgib.jk.ab.aiiiiiib.ab.jk.aihk.O",
+    "N.jeld.cd.jk.cllfelld.jk.cd.clfk.O",
+    "N.jk......jk....jk....jk......jk.O",
+    "N.jk.aiiiihgiib.jk.aiihgiiiib.jk.O",
+    "N.jk.clllllllld.cd.clllllllld.jk.O",
+    "N.jk..........................jk.O",
+    "N.jgiiiiiiiiiib.ab.aiiiiiiiiiihk.O",
+    "N.cllllllllllld.cd.cllllllllllld.O",
+    "N................................O",
+    "CPPPPPPPPPPPPPb ab aPPPPPPPPPPPPPD",
+    "              N jk O              ",
+    "              N jk O              ",
+  ]);
+
+  offsets
 }
